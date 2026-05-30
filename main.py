@@ -121,7 +121,11 @@ async def proxy(req: ProxyRequest):
                 headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
                 json={"model": req.model or prov["default_model"], "messages": req.messages},
             )
-            return resp.json()
+            data = resp.json()
+            # Always include "choices" so the review server can find it
+            if "choices" not in data:
+                data = {"choices": None, "error": data.get("error", str(data))}
+            return data
     except Exception as e:
         raise HTTPException(500, f"proxy failed: {e}")
 
