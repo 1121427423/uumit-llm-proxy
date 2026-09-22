@@ -3,9 +3,9 @@
 「城市夜景」20 秒延时混剪 —— 可复现构建脚本
 =================================================
 素材（全部免版权）：
-  视频 A : 216-speed-night-city-cars.mp4   —— 城市夜景车流（4K/60fps，pixabay 授权素材，CC0 兼容）
-  视频 B : 233-eagle-drone-roundabout.mp4  —— 夜景俯瞰环岛航拍（DJI 实拍，pixabay 授权素材）
-  视频 C : 211-speed-city.mp4              —— 街头车流拖尾（pixabay 授权素材）
+  视频 A : 216-speed-night-city-cars.mp4   —— 城市夜景车流（4K/60fps，Pexels 免费素材，可商用）
+  视频 B : 233-eagle-drone-roundabout.mp4  —— 夜景俯瞰环岛航拍（DJI 实拍，Pexels 免费素材）
+  视频 C : 211-speed-city.mp4              —— 街头车流拖尾（Pexels 免费素材）
   音乐   : Shenzhen Nightlife (freepd.com / Kevin MacLeod) —— CC0 1.0
 
 流程：
@@ -35,22 +35,32 @@ OUT_MP4 = os.path.join(HERE, "city-night-timelapse-20s.mp4")
 
 
 def find_exe(name: str) -> str:
+    """按「环境变量 → PATH → 工具链安装目录 → 已知发行包位置」查找二进制。"""
     env = os.environ.get(name.upper())
     if env and os.path.exists(env):
         return env
     p = shutil.which(name)
     if p:
         return p
-    for cand in (
-        "/usr/local/lib/python3.11/dist-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v7.0.2",
-        "/tmp/npmtest/node_modules/@ffmpeg-installer/linux-x64/ffmpeg",
-    ):
-        if name == "ffmpeg" and os.path.exists(cand):
+    toolchain = os.path.expanduser(f"~/.local/share/citynight/{name}")
+    if os.path.exists(toolchain):
+        return toolchain
+    known = {
+        "ffmpeg": (
+            "/usr/local/lib/python3.11/dist-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v7.0.2",
+            "/tmp/npmtest/node_modules/@ffmpeg-installer/linux-x64/ffmpeg",
+        ),
+        "ffprobe": ("/tmp/npmtest/node_modules/@ffprobe-installer/linux-x64/ffprobe",),
+    }[name]
+    for cand in known:
+        if os.path.exists(cand):
             return cand
-    for cand in ("/tmp/npmtest/node_modules/@ffprobe-installer/linux-x64/ffprobe",):
-        if name == "ffprobe" and os.path.exists(cand):
-            return cand
-    raise SystemExit(f"找不到 {name}")
+    raise SystemExit(
+        f"找不到 {name}。请先运行 `bash tools/install-toolchain.sh`，"
+        f"或设置环境变量 {name.upper()}=<可执行文件路径>。")
+
+
+FF = find_exe("ffmpeg")
 
 
 FF = find_exe("ffmpeg")
@@ -59,27 +69,35 @@ FP = find_exe("ffprobe")
 # ---------------------------------------------------------------- 参数
 FPS = 30
 W, H = 1920, 1080
-SHOT = 2.0                      # 每个镜头 2.000 秒 = 120 BPM 的 4 拍 = 1 小节
-N_SHOTS = 10
-TOTAL = SHOT * N_SHOTS          # 20.000 秒
 TARGET_BPM = 120.0
-BEAT = 60.0 / TARGET_BPM        # 0.5 s
-BAR = 4 * BEAT                  # 2.0 s
+BEAT = 60.0 / TARGET_BPM        # 0.5 s —— 切分的最小单位
+BAR = 4 * BEAT                  # 2.0 s = 1 小节
+SHOT = 2.0                      # 默认镜头长度（仅作参考值）
 
-# 镜头表： (源, 源起点秒, 播放倍速, 取景)
+# 镜头表 v2： (源, 源起点秒, 播放倍速, 时长, 取景)
+#   dur  : 1.0–3.5 s 的长短对比，制造张弛；全部是 0.5 s（=1 拍）的整数倍，
+#          因此 9 个切点依旧全部落在节拍网格上（其中 t=10.0s 正好是闪烁强调点）。
 #   zoom : (起始放大倍率, 结束放大倍率)；pan : 'l2r'/'r2l'/None
 SHOTS = [
-    dict(src="B", t=0.40, speed=1.30, zoom=(1.00, 1.07), pan=None, cx=0.5, cy=0.5),
-    dict(src="A", t=0.50, speed=2.00, zoom=(1.00, 1.00), pan=None, cx=0.5, cy=0.5),
-    dict(src="C", t=0.20, speed=1.00, zoom=(1.15, 1.15), pan=None, cx=0.5, cy=0.5),
-    dict(src="B", t=5.60, speed=1.40, zoom=(1.45, 1.45), pan="l2r", cx=0.5, cy=0.5),
-    dict(src="A", t=9.00, speed=2.20, zoom=(1.10, 1.22), pan=None, cx=0.5, cy=0.5),
-    dict(src="C", t=3.60, speed=1.10, zoom=(1.30, 1.30), pan=None, cx=0.56, cy=0.5),
-    dict(src="A", t=14.60, speed=1.80, zoom=(1.35, 1.35), pan="r2l", cx=0.5, cy=0.5),
-    dict(src="B", t=11.40, speed=1.35, zoom=(1.28, 1.06), pan=None, cx=0.5, cy=0.5),
-    dict(src="A", t=19.20, speed=2.20, zoom=(1.02, 1.08), pan=None, cx=0.5, cy=0.5),
-    dict(src="B", t=16.40, speed=1.50, zoom=(1.18, 1.00), pan=None, cx=0.5, cy=0.5),
+    dict(src="B", t=0.40, speed=1.35, dur=3.0, zoom=(1.00, 1.12), pan=None, cx=0.5, cy=0.5),
+    dict(src="A", t=0.50, speed=2.00, dur=2.0, zoom=(1.00, 1.00), pan=None, cx=0.5, cy=0.5),
+    dict(src="C", t=0.20, speed=1.00, dur=1.5, zoom=(1.15, 1.15), pan=None, cx=0.5, cy=0.5),
+    dict(src="B", t=5.60, speed=1.45, dur=1.0, zoom=(1.45, 1.45), pan="l2r", cx=0.5, cy=0.5),
+    dict(src="A", t=9.00, speed=2.20, dur=2.5, zoom=(1.06, 1.22), pan=None, cx=0.5, cy=0.5),
+    dict(src="C", t=3.60, speed=1.10, dur=1.0, zoom=(1.30, 1.30), pan=None, cx=0.56, cy=0.5),
+    dict(src="A", t=14.60, speed=1.80, dur=1.5, zoom=(1.35, 1.35), pan="r2l", cx=0.5, cy=0.5),
+    dict(src="B", t=11.40, speed=1.35, dur=2.0, zoom=(1.28, 1.06), pan=None, cx=0.5, cy=0.5),
+    dict(src="A", t=19.20, speed=2.20, dur=2.0, zoom=(1.02, 1.08), pan=None, cx=0.5, cy=0.5),
+    dict(src="B", t=14.80, speed=1.50, dur=3.5, zoom=(1.16, 1.00), pan=None, cx=0.5, cy=0.5),
 ]
+
+DURS = [sh["dur"] for sh in SHOTS]
+CUT_TIMES = [sum(DURS[:i]) for i in range(len(DURS))]     # 每个镜头起点（秒）
+TOTAL = sum(DURS)                                          # 20.000 秒
+N_SHOTS = len(SHOTS)
+assert abs(TOTAL - 20.0) < 1e-9 and \
+       all(abs(d / BEAT - round(d / BEAT)) < 1e-9 for d in DURS), \
+    "镜头时长必须是 0.5s 的整数倍且总和为 20.000s"
 
 SOURCES = {
     "A": os.path.join(SRC, "night_city_cars.mp4"),
@@ -104,9 +122,15 @@ def run(cmd, quiet=True):
     return r
 
 
-def probe(path, entries):
-    r = run([FP, "-v", "error", "-show_entries", entries,
-             "-of", "json", path])
+def probe(path, entries, allow_fail=False):
+    """ffprobe 包装。allow_fail=True 时探测失败返回 None（用于断点续渲等容错场景）。"""
+    try:
+        r = run([FP, "-v", "error", "-show_entries", entries,
+                 "-of", "json", path])
+    except SystemExit:
+        if allow_fail:
+            return None
+        raise
     return json.loads(r.stdout.decode())
 
 
@@ -203,9 +227,10 @@ def build_music():
     onset, ofps = onset_env(x, sr)
     onset = onset / (onset.mean() + 1e-12)
     best = None
+    cut_grid = np.array(CUT_TIMES)
     for start in np.arange(0.0, len(x) / sr - TOTAL - 0.05, 0.25):
-        for off in np.arange(0.0, BAR, 0.005):
-            ts = start + off + BAR * np.arange(N_SHOTS)
+        for off in np.arange(0.0, BEAT, 0.005):
+            ts = start + off + cut_grid
             if ts[-1] > len(x) / sr - 0.01:
                 break
             i_low = np.round(ts * lfps).astype(int)
@@ -223,7 +248,7 @@ def build_music():
 
     music = os.path.join(WORK, "music.m4a")
     af = (f"afade=t=in:st=0:d=0.20,"
-          f"afade=t=out:st={TOTAL - 0.45:.3f}:d=0.45,"
+          f"afade=t=out:st={TOTAL - 0.55:.3f}:d=0.55,"
           f"loudnorm=I=-14:TP=-1.5:LRA=11")
     run([FF, "-y", "-v", "error", "-ss", f"{start + off:.4f}", "-t", f"{TOTAL}",
          "-i", bed, "-af", af, "-c:a", "aac", "-b:a", "192k", "-ar", "48000", music])
@@ -252,7 +277,7 @@ def shot_filter(sh, tag):
     """
     sw, sh_, sfps = src_fps(tag)
     z0, z1 = sh["zoom"]
-    n_in = max(2, int(round(SHOT * sh["speed"] * sfps)))
+    n_in = max(2, int(round(sh["dur"] * sh["speed"] * sfps)))
     vf = []
     moving = abs(z1 - z0) > 1e-6 or bool(sh.get("pan"))
     if not moving:
@@ -278,36 +303,54 @@ def shot_filter(sh, tag):
                   f":s={W}x{H}:fps={FPS}")
     vf.append(f"setpts=PTS/{sh['speed']}")
     if sfps / sh["speed"] < 28.0:
+        # 注：vsbmc=1 会慢 3 倍且对夜景下采样画质无可见收益，这里关掉
         vf.append(f"minterpolate=fps={FPS}:mi_mode=mci:mc_mode=aobmc:"
-                  f"me_mode=bidir:vsbmc=1")
-    # 末帧克隆补齐，保证每个镜头都是精确的 60 帧 / 2.000 s
+                  f"me_mode=bidir:vsbmc=0")
+    # 末帧克隆补齐：源有效帧不够时用最后一帧顶到 dur*FPS，保证帧数精确（见 §9.1）
     vf.append(f"tpad=stop_mode=clone:stop_duration=0.5")
     vf.append(f"fps={FPS},setsar=1")
     return vf
+
+
+def clip_ok(path, expect_frames):
+    """断点续渲用：文件存在、能解码、且帧数正确才算可用（半截文件/被中断的片段会被丢弃）。"""
+    if not os.path.exists(path) or os.path.getsize(path) < 4096:
+        return False
+    try:
+        info = probe(path, "stream=nb_frames", allow_fail=True)
+        return bool(info) and int(info["streams"][0]["nb_frames"]) == expect_frames
+    except Exception:
+        return False
 
 
 def build_shots():
     os.makedirs(WORK, exist_ok=True)
     clip_dir = os.path.join(WORK, "clips")
     os.makedirs(clip_dir, exist_ok=True)
+    resume = os.environ.get("BUILD_RESUME") == "1"
     files = []
     for idx, sh in enumerate(SHOTS):
         out = os.path.join(clip_dir, f"shot{idx:02d}.mp4")
         files.append(out)
-        # 多取 0.4s 余量：保证 zoompan 变速后仍有 ≥60 个真实帧，
+        expect = int(round(sh["dur"] * FPS))
+        if resume and clip_ok(out, expect):
+            print(f"  [镜头 {idx + 1:02d}] 已存在且帧数正确（{expect} 帧），跳过")
+            continue
+        # 多取 0.4s 余量：保证 zoompan 变速后仍有足量真实帧，
         # 避免 tpad 克隆帧在切点前造成 1~3 帧“顿一下”。
-        src_dur = SHOT * sh["speed"] + 0.4
+        src_dur = sh["dur"] * sh["speed"] + 0.4
         vf = shot_filter(sh, sh["src"])
         cmd = [FF, "-y", "-v", "error",
                "-ss", f"{sh['t']}", "-t", f"{src_dur}",
                "-i", SOURCES[sh["src"]],
                "-an", "-vf", ",".join(vf),
-               "-frames:v", str(int(round(SHOT * FPS))),
+               "-frames:v", str(int(round(sh["dur"] * FPS))),
                "-r", f"{FPS}",
                "-c:v", "libx264", "-preset", "medium", "-crf", "16",
                "-pix_fmt", "yuv420p", out]
-        print(f"  [镜头 {idx + 1:02d}] {sh['src']} t={sh['t']} 速度x{sh['speed']} "
-              f"{sh['pan'] or ''} zoom={sh['zoom']}")
+        print(f"  [镜头 {idx + 1:02d}] {sh['dur']:.1f}s @ {CUT_TIMES[idx]:.1f}s "
+              f"{sh['src']} t={sh['t']} 速度x{sh['speed']} {sh['pan'] or ''} "
+              f"zoom={sh['zoom']}")
         run(cmd)
     return files
 
@@ -324,15 +367,20 @@ def build_final(music):
          "-c", "copy", concat])
 
     # 白闪：把峰值放在第 10.0 s 那一刀上（第 6 个镜头起始）
+    ACCENT = 10.0   # 强调点：落在第 6 刀的切点上（见 CUT_TIMES）
     flash = ("format=yuva420p,colorchannelmixer=aa=0.42,"
-             "fade=t=in:st=9.94:d=0.06:alpha=1,fade=t=out:st=10.0:d=0.14:alpha=1")
+             f"fade=t=in:st={ACCENT - 0.06}:d=0.06:alpha=1,"
+             f"fade=t=out:st={ACCENT}:d=0.14:alpha=1")
     vf = ("[0:v]scale=1920:1080,setsar=1,"
-          "eq=contrast=1.08:saturation=1.18:gamma=0.96:brightness=-0.010,"
+          "eq=contrast=1.09:saturation=1.18:gamma=1.04,"
+          "colorlevels=rimin=0.035:gimin=0.035:bimin=0.035,"
           "vignette=angle=PI/5,"
           "noise=alls=4:allf=t+u,"
           "format=yuv420p[v0];"
           f"[1:v]{flash}[fl];"
-          "[v0][fl]overlay=0:0:format=auto,format=yuv420p[vout]")
+          "[v0][fl]overlay=0:0:format=auto,"
+          "fade=t=in:st=0:d=0.35,fade=t=out:st=19.45:d=0.55,"
+          "format=yuv420p[vout]")
     rendered = os.path.join(WORK, "video_final.mp4")
     run([FF, "-y", "-v", "error", "-i", concat,
          "-f", "lavfi", "-i", f"color=c=white:s={W}x{H}:d={TOTAL}:r={FPS}",
@@ -348,7 +396,7 @@ def build_final(music):
          "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
          "-t", f"{TOTAL}", "-movflags", "+faststart",
          "-metadata", "title=City Nights · 20s Timelapse Montage",
-         "-metadata", "comment=Footage: pixabay royalty-free stock (github.com/sugianand/11planner). "
+         "-metadata", "comment=Footage: Pexels royalty-free stock (github.com/sugianand/11planner). "
                       "Music: Shenzhen Nightlife by Kevin MacLeod (freepd.com, CC0 1.0)",
          OUT_MP4])
     return OUT_MP4

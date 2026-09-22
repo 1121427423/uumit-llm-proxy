@@ -26,18 +26,10 @@ WORK = os.environ.get("BUILD_WORKDIR_V", "/tmp/city_night_v")
 OUT_MP4 = os.path.join(OUT_DIR, "city-night-timelapse-9x16-20s.mp4")
 
 # px/py : 竖窗口在源画面中的位置（0=左/上，1=右/下）
-PORTRAIT_SHOTS = [
-    dict(src="B", t=0.40, speed=1.30, zoom=(1.00, 1.07), pan=None, px=0.50),
-    dict(src="A", t=0.50, speed=2.00, zoom=(1.00, 1.00), pan=None, px=0.50),
-    dict(src="C", t=0.20, speed=1.00, zoom=(1.15, 1.15), pan=None, px=0.50),
-    dict(src="B", t=5.60, speed=1.40, zoom=(1.45, 1.45), pan="l2r", px=0.50),
-    dict(src="A", t=9.00, speed=2.20, zoom=(1.10, 1.22), pan=None, px=0.46),
-    dict(src="C", t=3.60, speed=1.10, zoom=(1.30, 1.30), pan=None, px=0.56),
-    dict(src="A", t=14.60, speed=1.80, zoom=(1.35, 1.35), pan="r2l", px=0.50),
-    dict(src="B", t=11.40, speed=1.35, zoom=(1.28, 1.06), pan=None, px=0.52),
-    dict(src="A", t=19.20, speed=2.20, zoom=(1.02, 1.08), pan=None, px=0.50),
-    dict(src="B", t=16.40, speed=1.50, zoom=(1.18, 1.00), pan=None, px=0.48),
-]
+PORTRAIT_PX = [0.50, 0.50, 0.50, 0.50, 0.46, 0.56, 0.50, 0.52, 0.50, 0.48]
+
+# 时长 / 变速 / 运镜全部继承横版 SHOTS（切点逐帧一致），只把取景改为竖版窗口位置。
+PORTRAIT_SHOTS = [dict(**sh, px=px) for sh, px in zip(B.SHOTS, PORTRAIT_PX)]
 
 
 def even(v):
@@ -50,7 +42,7 @@ def shot_filter(sh, tag):
     z0, z1 = sh["zoom"]
     win_w = even(sh_ * W / H)          # 源中 9:16 竖窗口的宽（A/B: 810, C: 608）
     x0 = min(max(even((sw - win_w) * sh.get("px", 0.5)), 0), sw - win_w)
-    n_in = max(2, int(round(B.SHOT * sh["speed"] * sfps)))
+    n_in = max(2, int(round(sh["dur"] * sh["speed"] * sfps)))
     vf = [f"crop={win_w}:{sh_}:{x0}:0"]
     moving = abs(z1 - z0) > 1e-6 or bool(sh.get("pan"))
     if not moving:
@@ -70,8 +62,9 @@ def shot_filter(sh, tag):
                   f":s={W}x{H}:fps={B.FPS}")
     vf.append(f"setpts=PTS/{sh['speed']}")
     if sfps / sh["speed"] < 28.0:
+        # 与横版保持完全一致的补帧参数（见 build.py；vsbmc=0 更快且画质无差异）
         vf.append("minterpolate=fps=%d:mi_mode=mci:mc_mode=aobmc:"
-                  "me_mode=bidir:vsbmc=1" % B.FPS)
+                  "me_mode=bidir:vsbmc=0" % B.FPS)
     vf.append("tpad=stop_mode=clone:stop_duration=0.5")
     vf.append(f"fps={B.FPS},setsar=1")
     return vf
@@ -80,16 +73,22 @@ def shot_filter(sh, tag):
 def build_shots():
     clip_dir = os.path.join(WORK, "clips")
     os.makedirs(clip_dir, exist_ok=True)
+    resume = os.environ.get("BUILD_RESUME") == "1"
     for idx, sh in enumerate(PORTRAIT_SHOTS):
         out = os.path.join(clip_dir, f"shot{idx:02d}.mp4")
+        expect = int(round(sh["dur"] * B.FPS))
+        if resume and B.clip_ok(out, expect):
+            print(f"  [竖直镜头 {idx + 1:02d}] 已存在且帧数正确（{expect} 帧），跳过")
+            continue
         vf = shot_filter(sh, sh["src"])
-        print(f"  [竖直镜头 {idx + 1:02d}] {sh['src']} t={sh['t']} 速度x{sh['speed']} "
-              f"{sh['pan'] or ''} zoom={sh['zoom']} px={sh.get('px')}")
+        print(f"  [竖直镜头 {idx + 1:02d}] {sh['dur']:.1f}s @ {B.CUT_TIMES[idx]:.1f}s "
+              f"{sh['src']} t={sh['t']} 速度x{sh['speed']} {sh['pan'] or ''} "
+              f"zoom={sh['zoom']} px={sh.get('px')}")
         B.run([B.FF, "-y", "-v", "error",
-               "-ss", f"{sh['t']}", "-t", f"{B.SHOT * sh['speed'] + 0.4}",
+               "-ss", f"{sh['t']}", "-t", f"{sh['dur'] * sh['speed'] + 0.4}",
                "-i", B.SOURCES[sh["src"]],
                "-an", "-vf", ",".join(vf),
-               "-frames:v", str(int(round(B.SHOT * B.FPS))),
+               "-frames:v", str(int(round(sh['dur'] * B.FPS))),
                "-r", f"{B.FPS}",
                "-c:v", "libx264", "-preset", "medium", "-crf", "16",
                "-pix_fmt", "yuv420p", out])
@@ -106,15 +105,20 @@ def build_final(music):
     B.run([B.FF, "-y", "-v", "error", "-f", "concat", "-safe", "0", "-i", lst,
            "-c", "copy", concat])
 
+    ACCENT = 10.0
     flash = ("format=yuva420p,colorchannelmixer=aa=0.42,"
-             "fade=t=in:st=9.94:d=0.06:alpha=1,fade=t=out:st=10.0:d=0.14:alpha=1")
+             f"fade=t=in:st={ACCENT - 0.06}:d=0.06:alpha=1,"
+             f"fade=t=out:st={ACCENT}:d=0.14:alpha=1")
     vf = (f"[0:v]scale={W}:{H},setsar=1,"
-          "eq=contrast=1.08:saturation=1.18:gamma=0.96:brightness=-0.010,"
+          "eq=contrast=1.09:saturation=1.18:gamma=1.04,"
+          "colorlevels=rimin=0.035:gimin=0.035:bimin=0.035,"
           "vignette=angle=PI/5,"
           "noise=alls=4:allf=t+u,"
           "format=yuv420p[v0];"
           f"[1:v]{flash}[fl];"
-          "[v0][fl]overlay=0:0:format=auto,format=yuv420p[vout]")
+          "[v0][fl]overlay=0:0:format=auto,"
+          "fade=t=in:st=0:d=0.35,fade=t=out:st=19.45:d=0.55,"
+          "format=yuv420p[vout]")
     rendered = os.path.join(WORK, "video_final.mp4")
     B.run([B.FF, "-y", "-v", "error", "-i", concat,
            "-f", "lavfi", "-i", f"color=c=white:s={W}x{H}:d={B.TOTAL}:r={B.FPS}",
@@ -130,7 +134,7 @@ def build_final(music):
            "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-ac", "2",
            "-t", f"{B.TOTAL}", "-movflags", "+faststart",
            "-metadata", "title=City Nights · 20s Vertical Timelapse Montage",
-           "-metadata", "comment=Footage: pixabay/pexels royalty-free stock. "
+           "-metadata", "comment=Footage: Pexels royalty-free stock (github.com/sugianand/11planner). "
                         "Music: Shenzhen Nightlife by Kevin MacLeod (freepd.com, CC0 1.0)",
            OUT_MP4])
 

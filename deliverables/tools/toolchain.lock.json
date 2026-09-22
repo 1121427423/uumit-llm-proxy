@@ -1,0 +1,32 @@
+{
+  "_note": "本项目所用工具链的精确版本与校验和。install-toolchain.sh 会按此文件安装并校验。",
+  "target_platform": "linux-x86_64 (Debian 12 bookworm)",
+  "python": { "version": "3.11.2", "required_for": "构建脚本 / 分析 / 自检" },
+  "node": { "version": "22.22.3", "required_for": "仅用于取 ffprobe 安装包" },
+  "ffmpeg": {
+    "version": "7.0.2-static",
+    "build": "https://johnvansickle.com/ffmpeg/ (GPL static build)",
+    "distribution": "pip wheel: imageio-ffmpeg 0.6.0 (manylinux2014_x86_64)",
+    "vendored_file": "tools/packages/imageio_ffmpeg-0.6.0-py3-none-manylinux2014_x86_64.whl",
+    "wheel_sha256": "c7e46fcec401dd990405049d2e2f475e2b397779df2519b544b8aab515195282",
+    "embedded_binary": "imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v7.0.2",
+    "binary_sha256": "e7e7fb30477f717e6f55f9180a70386c62677ef8a4d4d1a5d948f4098aa3eb99",
+    "binary_size": 79826272
+  },
+  "ffprobe": {
+    "version": "5.2.0 (static build, johnvansickle.com)",
+    "distribution": "npm tarball: @ffprobe-installer/linux-x64 5.2.0",
+    "tarball_url": "https://registry.npmjs.org/@ffprobe-installer/linux-x64/-/linux-x64-5.2.0.tgz",
+    "tarball_sha256": "8b6b2e34bad5ea7cfbe1914185145f514f620f24203a1a421e8d00a698bf8e61",
+    "tarball_size": 29057896,
+    "binary_path_in_tarball": "package/ffprobe",
+    "binary_sha256": "576c21674291ec1948d507ea8ab0d78eb6621a0be8c6f1a6db0f50c5fcb1e0f9",
+    "vendored": false,
+    "vendored_reason": "29 MB 的 ffprobe 安装包未入库，以控制仓库体积（视频成片已占 63 MB）。install-toolchain.sh 会从 npm registry 下载并用上面的 sha256 校验；verify.py / review_agent.py 也可自动回退到 ffmpeg -i 解析。"
+  },
+  "python_packages": {
+    "numpy": { "version": "2.4.6", "used_for": "音频节拍分析、逐帧运动与画质度量" },
+    "imageio-ffmpeg": { "version": "0.6.0", "used_for": "提供 ffmpeg 7.0.2 静态二进制" }
+  },
+  "cli": { "gh": "2.23.0（素材获取：GitHub Blobs API）" }
+}

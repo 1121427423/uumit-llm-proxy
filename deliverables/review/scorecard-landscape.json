@@ -1,0 +1,213 @@
+{
+  "variant": "landscape",
+  "file": "/home/user/uumit-llm-proxy/deliverables/city-night-timelapse-20s.mp4",
+  "total": 92.9,
+  "sections": [
+    {
+      "name": "技术规格与兼容性",
+      "weight": 15,
+      "items": [
+        {
+          "label": "编码/容器合规",
+          "points": 10.0,
+          "max": 10,
+          "detail": "mp4 容器✓ / H.264 High Profile✓ / Level 4.1（≤1080p60 兼容）✓ / yuv420p 8bit（通用兼容）✓ / +faststart（moov 前置）✓ / AAC 2ch 48kHz✓",
+          "auto": true
+        },
+        {
+          "label": "时长 20s 且帧数精确",
+          "points": 5,
+          "max": 5,
+          "detail": "duration=20.000s frames=600（要求 20.000s / 600 帧）",
+          "auto": true
+        }
+      ],
+      "score": 15.0
+    },
+    {
+      "name": "节奏与音画同步",
+      "weight": 25,
+      "items": [
+        {
+          "label": "切点落在能量重拍上",
+          "points": 10.53,
+          "max": 12,
+          "detail": "后 9 刀低频强调均值 2.28x（满分行 ≥2.6x）；逐刀 0.8 2.0 2.5 2.3 2.1 2.1 2.3 2.2 2.5 2.5",
+          "auto": true
+        },
+        {
+          "label": "全片网格对齐（非巧合）",
+          "points": 5,
+          "max": 5,
+          "detail": "0.5s 网格强调 偏移0=1.99x vs 偏移0.25s=1.25x，比值 1.59",
+          "auto": true
+        },
+        {
+          "label": "实际 BPM 稳定在 120",
+          "points": 4,
+          "max": 4,
+          "detail": "实测 119.80 BPM，周期偏差 0.17%",
+          "auto": true
+        },
+        {
+          "label": "镜头时长层次（力度起伏）",
+          "points": 4,
+          "max": 4,
+          "detail": "镜头长度集合 [1.0, 1.5, 2.0, 2.5, 3.0, 3.5] → 6 种；长短镜对比形成张弛（切点 [0, 3.0, 5.0, 6.5, 7.5, 10.0, 11.0, 12.5, 14.5, 16.5]）",
+          "auto": true
+        }
+      ],
+      "score": 23.528810902108347
+    },
+    {
+      "name": "运动与流畅度",
+      "weight": 15,
+      "items": [
+        {
+          "label": "无冻帧/重复帧",
+          "points": 6,
+          "max": 6,
+          "detail": "重复帧 0 处（阈值 diff<0.35）",
+          "auto": true
+        },
+        {
+          "label": "镜头内持续运动",
+          "points": 3.58,
+          "max": 5,
+          "detail": "镜头内最小帧间差 1.07（满分行 ≥1.5）；逐镜 1.1 1.9 2.9 19.2 3.2 3.3 7.7 2.9 1.9 2.0",
+          "auto": true
+        },
+        {
+          "label": "镜头内无异常跳变",
+          "points": 2.5,
+          "max": 4,
+          "detail": "单镜头内最大/中位帧间差 10.7（<8 为平滑；已排除切点帧）",
+          "auto": true
+        }
+      ],
+      "score": 12.077430645624796
+    },
+    {
+      "name": "画面质量",
+      "weight": 20,
+      "items": [
+        {
+          "label": "清晰度（拉普拉斯方差）",
+          "points": 7.0,
+          "max": 7,
+          "detail": "抽帧清晰度 1735（≥260 满分）",
+          "auto": true
+        },
+        {
+          "label": "曝光与动态范围",
+          "points": 3.0,
+          "max": 5,
+          "detail": "死黑像素 22.6%",
+          "auto": true
+        },
+        {
+          "label": "噪点/压缩伪影控制",
+          "points": 4,
+          "max": 4,
+          "detail": "中位帧间噪声 1.00（<3 干净）",
+          "auto": true
+        },
+        {
+          "label": "画面多样性（相邻镜头差异）",
+          "points": 4.0,
+          "max": 4,
+          "detail": "相邻镜头直方图距离均值 1.97（≥0.55 满分）；亮度层次标准差 6.9",
+          "auto": true
+        }
+      ],
+      "score": 18.0
+    },
+    {
+      "name": "剪辑结构与叙事",
+      "weight": 15,
+      "items": [
+        {
+          "label": "开场/收尾处理",
+          "points": 5.0,
+          "max": 5,
+          "detail": "首帧组亮度 11.0 / 尾帧组 8.6 / 全片 41.4（首尾均有淡入淡出）",
+          "auto": true
+        },
+        {
+          "label": "镜头语法与素材多样性",
+          "points": 4.3,
+          "max": 5,
+          "detail": "运动方式 ['pan', 'pull', 'push', 'static']（4 种）；独特画面源 3 支（3 支已是本环境可达的夜景上限）",
+          "auto": true
+        },
+        {
+          "label": "视觉强调点（中段闪烁）",
+          "points": 5,
+          "max": 5,
+          "detail": "t=10.00s 亮度突增 +97.3（要求 +≥8 且落在 8–12s）",
+          "auto": true
+        }
+      ],
+      "score": 14.3
+    },
+    {
+      "name": "合规与可复现",
+      "weight": 10,
+      "items": [
+        {
+          "label": "许可标注与脚本齐备",
+          "points": 5.0,
+          "max": 5,
+          "detail": "README 许可表 ✓；构建/自检脚本 ✓",
+          "auto": true
+        },
+        {
+          "label": "完整文档与工具链固化",
+          "points": 5.0,
+          "max": 5,
+          "detail": "DOCUMENTATION.md ✓；tools/ 工具链 ✓",
+          "auto": true
+        }
+      ],
+      "score": 10.0
+    }
+  ],
+  "passed": true,
+  "suggestions": [
+    {
+      "section": "画面质量",
+      "label": "曝光与动态范围",
+      "lost": 2.0,
+      "detail": "死黑像素 22.6%",
+      "advice": "抬暗部：加 colorlevels=rimin/gimin/bimin=0.035 与 eq=gamma=1.04；同时收敛对比度与暗角强度。"
+    },
+    {
+      "section": "运动与流畅度",
+      "label": "镜头内无异常跳变",
+      "lost": 1.5,
+      "detail": "单镜头内最大/中位帧间差 10.7（<8 为平滑；已排除切点帧）",
+      "advice": "排查单镜头内的非平滑帧：确认没有整数帧截断误差、没有跨镜头的克隆帧，并对低帧率源启用 minterpolate 补帧（vsbmc=0 即可）。"
+    },
+    {
+      "section": "节奏与音画同步",
+      "label": "切点落在能量重拍上",
+      "lost": 1.47,
+      "detail": "后 9 刀低频强调均值 2.28x（满分行 ≥2.6x）；逐刀 0.8 2.0 2.5 2.3 2.1 2.1 2.3 2.2 2.5 2.5",
+      "advice": "重跑 build.py 的网格相位扫描（段落起点 + 0.5 s 网格偏移），让每一刀压在低频底鼓上；必要时更换曲目段落或改用 atempo 微调 BPM。"
+    },
+    {
+      "section": "运动与流畅度",
+      "label": "镜头内持续运动",
+      "lost": 1.42,
+      "detail": "镜头内最小帧间差 1.07（满分行 ≥1.5）；逐镜 1.1 1.9 2.9 19.2 3.2 3.3 7.7 2.9 1.9 2.0",
+      "advice": "给近静态镜头加缓慢推拉（2 s 内 zoom 变化 ≥0.12），不要使用 z0==z1 的完全静止机位。"
+    },
+    {
+      "section": "剪辑结构与叙事",
+      "label": "镜头语法与素材多样性",
+      "lost": 0.7,
+      "detail": "运动方式 ['pan', 'pull', 'push', 'static']（4 种）；独特画面源 3 支（3 支已是本环境可达的夜景上限）",
+      "advice": "增加运镜种类（push/pull/pan/static 混用）并扩充素材源；本环境受可用素材限制时，至少在时段与取景（px/cx/cy）上拉开差异。"
+    }
+  ]
+}

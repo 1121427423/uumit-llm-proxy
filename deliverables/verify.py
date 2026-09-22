@@ -72,8 +72,8 @@ def main():
     onset, ofps = B.onset_env(x, sr)
     onset = onset / (onset.mean() + 1e-12)
     emps = []
-    for k in range(B.N_SHOTS):
-        j = int(k * B.SHOT * lfps)
+    for c in B.CUT_TIMES:
+        j = int(c * lfps)
         h = int(0.06 * lfps)
         emps.append(low[max(0, j - h):j + h + 1].max() / low.mean())
     print("切点低频强调系数:", " ".join(f"{e:.2f}" for e in emps))
@@ -106,8 +106,10 @@ def main():
         .reshape(n2, H2, W2).astype(np.float32)
     d = np.abs(np.diff(fr, axis=0)).mean(axis=(1, 2))
     frozen = int((d < 0.35).sum())
-    shot_min = [float(d[k * 60:(k + 1) * 60].min()) for k in range(B.N_SHOTS)]
-    cut_jump = [float(d[k * 60 - 1]) for k in range(1, B.N_SHOTS)]
+    fcuts = [int(round(c * B.FPS)) for c in B.CUT_TIMES] + [len(d) + 1]
+    shot_min = [float(d[fcuts[k]:max(fcuts[k] + 1, fcuts[k + 1] - 1)].min())
+                for k in range(B.N_SHOTS)]
+    cut_jump = [float(d[fcuts[k] - 1]) for k in range(1, B.N_SHOTS)]
     print(f"帧间差分  : 均值 {d.mean():.2f} / 中位 {np.median(d):.2f}")
     print(f"冻帧      : {frozen} 处（阈值 diff<0.35）")
     print("镜头内最小运动:", " ".join(f"{m:.2f}" for m in shot_min))
@@ -119,8 +121,9 @@ def main():
     ]
 
     # --- 抽帧 contact sheet：每个镜头中段（第 36 帧 = 1.2s）各取一帧，5x2 拼图
-    sel = f"select='eq(mod(n-{int(1.2 * B.FPS)},{int(B.SHOT * B.FPS)}),0)"\
-          f"*gte(n,{int(1.2 * B.FPS)})'"
+    mid_frames = [int(round((c + 0.55 * l) * B.FPS))
+                  for c, l in zip(B.CUT_TIMES, B.DURS)]
+    sel = "select='" + "+".join(f"eq(n,{n})" for n in mid_frames) + "'"
     tile_scale = "scale=270:-1" if args.variant == "portrait" else "scale=480:-1"
     r = subprocess.run([B.FF, "-y", "-v", "error", "-i", OUT,
                         "-vf", f"{sel},{tile_scale},tile={cfg['tile']}",
