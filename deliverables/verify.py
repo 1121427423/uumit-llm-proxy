@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""成片自检：规格、节奏对齐、画面抽帧。"""
+"""成片自检：规格、节奏对齐、运动流畅度、画面抽帧。
+
+用法:
+  python3 verify.py                 # 横版 16:9
+  python3 verify.py --variant portrait   # 竖版 9:16
+"""
+import argparse
 import json
 import math
 import os
@@ -12,11 +18,28 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import build as B  # noqa: E402
 
-OUT = os.path.join(HERE, "city-night-timelapse-20s.mp4")
-SHEET = os.path.join(HERE, "qc-contact-sheet.jpg")
+CANVAS = {
+    "landscape": dict(w=1920, h=1080,
+                      mp4=os.path.join(HERE, "city-night-timelapse-20s.mp4"),
+                      sheet=os.path.join(HERE, "qc-contact-sheet.jpg"),
+                      tile="5x2"),
+    "portrait": dict(w=1080, h=1920,
+                     mp4=os.path.join(HERE, "vertical",
+                                      "city-night-timelapse-9x16-20s.mp4"),
+                     sheet=os.path.join(HERE, "vertical",
+                                        "qc-contact-sheet-9x16.jpg"),
+                     tile="5x2"),
+}
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--variant", default="landscape",
+                    choices=["landscape", "portrait"])
+    args = ap.parse_args()
+    cfg = CANVAS[args.variant]
+    OUT, SHEET = cfg["mp4"], cfg["sheet"]
+
     ok = True
     info = B.probe(OUT, "format=duration,size,bit_rate,format_name:"
                         "stream=index,codec_name,codec_type,width,height,"
@@ -38,7 +61,7 @@ def main():
     checks = [
         ("时长 20.000s (±0.02)", abs(dur - 20.0) <= 0.02),
         ("600 帧 @30fps", frames == 600),
-        ("1920x1080", v["width"] == 1920 and v["height"] == 1080),
+        (f"{cfg['w']}x{cfg['h']}", v["width"] == cfg["w"] and v["height"] == cfg["h"]),
         ("含音轨", a["codec_type"] == "audio"),
         ("mp4 容器", "mp4" in fmt["format_name"]),
     ]
@@ -74,7 +97,7 @@ def main():
     checks.append(("音频电平正常 (>-20 dBFS)", rms > -20))
 
     # --- 运动流畅度：逐帧差分，确认没有冻帧（重复帧）且切点是硬切
-    W2, H2 = 480, 270
+    W2, H2 = (480, 270) if args.variant == "landscape" else (270, 480)
     raw = subprocess.run([B.FF, "-v", "error", "-i", OUT, "-vf",
                           f"scale={W2}:{H2}", "-f", "rawvideo",
                           "-pix_fmt", "gray", "-"], capture_output=True).stdout
@@ -98,8 +121,9 @@ def main():
     # --- 抽帧 contact sheet：每个镜头中段（第 36 帧 = 1.2s）各取一帧，5x2 拼图
     sel = f"select='eq(mod(n-{int(1.2 * B.FPS)},{int(B.SHOT * B.FPS)}),0)"\
           f"*gte(n,{int(1.2 * B.FPS)})'"
+    tile_scale = "scale=270:-1" if args.variant == "portrait" else "scale=480:-1"
     r = subprocess.run([B.FF, "-y", "-v", "error", "-i", OUT,
-                        "-vf", f"{sel},scale=480:-1,tile=5x2",
+                        "-vf", f"{sel},{tile_scale},tile={cfg['tile']}",
                         "-frames:v", "1", "-q:v", "3", SHEET],
                        capture_output=True)
     if r.returncode != 0:

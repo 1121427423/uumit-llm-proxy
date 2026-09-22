@@ -1,8 +1,10 @@
 # 城市夜景 · 20 秒延时混剪
 
-> 交付物：**[`city-night-timelapse-20s.mp4`](./city-night-timelapse-20s.mp4)** — 1920×1080 / 30 fps / 20.000 s / H.264 + AAC
+> 交付物（两个画幅，共用同一条音乐床与同一套切点）：
+> - **横版 16:9** → [`city-night-timelapse-20s.mp4`](./city-night-timelapse-20s.mp4) — 1920×1080 / 30 fps / 20.000 s
+> - **竖版 9:16** → [`vertical/city-night-timelapse-9x16-20s.mp4`](./vertical/city-night-timelapse-9x16-20s.mp4) — 1080×1920 / 30 fps / 20.000 s（抖音 / Reels / Shorts）
 
-一条节奏感强的「城市夜景」延时风格混剪：10 个镜头、每 2.000 秒硬切一次，每一刀都精准落在音乐的**小节线**上。
+一条节奏感强的「城市夜景」延时风格混剪：10 个镜头、每 2.000 秒硬切一次，每一刀都精准落在音乐的**小节线**上。打开 `index.html` 可同屏对照播放两个版本。
 
 ---
 
@@ -29,6 +31,16 @@
 | 结构 | 10 个镜头 × 2.000 s，硬切；第 9.94–10.14 s 一次柔化高光闪烁（峰值正好压在 10.0 s 那一刀上） |
 | 调色 | 对比 +8%、饱和 +18%、gamma 0.96、暗角、胶片颗粒（夜景霓虹更通透，同时压住压缩噪点） |
 | 码率/体积 | ≈ 12.2 Mbps / 30.4 MB |
+
+### 竖版 9:16（`vertical/`）
+
+| 项目 | 规格 |
+|---|---|
+| 时长 | **20.000 s**（精确 600 帧 @ 30 fps） |
+| 画面 | 1080×1920，H.264 High@4.1，CRF 19，yuv420p，`+faststart`，≈13.2 Mbps / 33.0 MB |
+| 音频 | 与横版**逐帧相同**的音乐床（同一条 120 BPM 渲染结果） |
+| 取景 | 源为 16:9，竖版只取源画面 9/16 的宽度：先按每支镜头主体位置裁出 810×1440（1080p 源裁 608×1080）竖窗口，再做推拉/摇移；摇移镜头在竖窗口内横扫，冲击力比横版更强 |
+| 自检 | `python3 verify.py --variant portrait` → 12 项全部 PASS（含「无冻帧」与「切点硬切」） |
 
 ## 三、节奏设计（音画同步是怎么做的）
 
@@ -78,9 +90,13 @@ mkdir -p /tmp/foot /tmp/music
 #   /tmp/foot/211-speed-city.mp4            ← 同仓库 : frontend/public/city/211-speed-city.mp4
 #   /tmp/music/m_shenzhen.mp3               ← SoundSafari/CC0-1.0-Music : freepd.com/Shenzhen Nightlife.mp3
 
-# 2) 一键构建（默认工作目录 /tmp/city_night_build）
+# 2) 横版：一键构建（默认工作目录 /tmp/city_night_build）
 python3 build.py --stage all        # 输出 city-night-timelapse-20s.mp4
-python3 verify.py                   # 规格 / 节奏 / 抽帧自检
+python3 verify.py                   # 12 项自检（规格 / 节奏 / 运动流畅度 / 抽帧）
+
+# 3) 竖版：复用上面已对好拍的音乐床，只换画布与取景
+python3 build_portrait.py           # 输出 vertical/city-night-timelapse-9x16-20s.mp4
+python3 verify.py --variant portrait
 ```
 
 > 三支视频文件在上游仓库中不是 Git LFS 指针而是**真实二进制**，因此可用
@@ -101,9 +117,11 @@ zoompan(z=起始→结束, x/y 居中或摇移, d=1)  →  setpts=PTS/倍速
 
 | 文件 | 说明 |
 |---|---|
-| `city-night-timelapse-20s.mp4` | **成片**（30.4 MB） |
-| `index.html` | 本地播放页（视频播放器 + 下载按钮），随附 `serve.py` 可起带 Range 的静态服务 |
-| `poster.jpg` | 封面帧 |
-| `qc-contact-sheet.jpg` | 10 个镜头各抽一帧的画面自检图 |
-| `build.py` | 可复现构建脚本（音乐对拍 / 镜头渲染 / 合成调色三段） |
-| `verify.py` | 12 项自动验收（规格 + 节奏 + 运动流畅度 + 抽帧） |
+| `city-night-timelapse-20s.mp4` | **横版成片**（30.4 MB） |
+| `vertical/city-night-timelapse-9x16-20s.mp4` | **竖版成片**（33.0 MB，9:16） |
+| `index.html` | 本地播放页（横竖双版本对照 + 下载），随附 `serve.py` 可起带 Range 的静态服务 |
+| `poster.jpg` / `vertical/poster-9x16.jpg` | 封面帧 |
+| `qc-contact-sheet.jpg` / `vertical/qc-contact-sheet-9x16.jpg` | 10 个镜头各抽一帧的画面自检图 |
+| `build.py` | 横版构建脚本（音乐对拍 / 镜头渲染 / 合成调色三段） |
+| `build_portrait.py` | 竖版构建脚本（复用横版音乐床，只换画布与取景） |
+| `verify.py` | 12 项自动验收，`--variant landscape\|portrait` 切换画幅 |
