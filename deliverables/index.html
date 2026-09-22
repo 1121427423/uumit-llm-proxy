@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>城市夜景 · 20 秒延时混剪</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(120% 80% at 50% 0%, #17243c 0%, #0a0d14 55%, #05070b 100%);
+    color: #e8edf6; font: 15px/1.6 -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    padding: 28px 18px;
+  }
+  .wrap { width: min(1020px, 100%); }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: .5px; }
+  .sub { color: #8fa3c0; font-size: 13px; margin-bottom: 16px; }
+  video {
+    width: 100%; border-radius: 14px; display: block; background: #000;
+    box-shadow: 0 22px 60px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06);
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+  a.btn {
+    text-decoration: none; color: #dbe6f7; border: 1px solid rgba(255,255,255,.18);
+    padding: 8px 14px; border-radius: 9px; font-size: 13px; background: rgba(255,255,255,.04);
+  }
+  a.btn:hover { background: rgba(120,170,255,.16); border-color: rgba(120,170,255,.45); }
+  .meta { color: #8fa3c0; font-size: 12.5px; margin-top: 12px; }
+  .meta b { color: #cfe0f7; font-weight: 600; }
+  code { background: rgba(255,255,255,.07); padding: 1px 5px; border-radius: 5px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>城市夜景 · 20 秒延时混剪</h1>
+  <div class="sub">10 个镜头 × 2.000 s，每一刀都切在音乐的小节线上（120 BPM · CC0 音乐）</div>
+  <video src="city-night-timelapse-20s.mp4" poster="poster.jpg" controls preload="metadata" playsinline></video>
+  <div class="row">
+    <a class="btn" href="city-night-timelapse-20s.mp4" download>下载成片 mp4（30 MB）</a>
+    <a class="btn" href="qc-contact-sheet.jpg" target="_blank">画面自检图</a>
+    <a class="btn" href="README.md" target="_blank">素材来源与制作说明</a>
+    <a class="btn" href="build.py" target="_blank">build.py</a>
+  </div>
+  <div class="meta">
+    <b>1920×1080 · 30 fps · 20.000 s · H.264 High@4.1 + AAC 192 kbps</b><br>
+    画面：Pexels 免费素材（转载：<code>sugianand/11planner</code>）｜ 音乐：《Shenzhen Nightlife》Kevin MacLeod · FreePD · CC0 1.0
+  </div>
+</div>
+</body>
+</html>
