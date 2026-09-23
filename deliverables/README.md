@@ -1,27 +1,51 @@
-# 城市夜景 · 20 秒延时混剪
+# 城市夜景 · 20 秒延时混剪（v3 降重复版）
 
-> 交付物（两个画幅，共用同一条音乐床与同一套切点）：
-> - **横版 16:9** → [`city-night-timelapse-20s.mp4`](./city-night-timelapse-20s.mp4) — 1920×1080 / 30 fps / 20.000 s ｜ 评审 **97.3 / 100** ✅
-> - **竖版 9:16** → [`vertical/city-night-timelapse-9x16-20s.mp4`](./vertical/city-night-timelapse-9x16-20s.mp4) — 1080×1920 / 30 fps / 20.000 s（抖音 / Reels / Shorts）｜ 评审 **96.8 / 100** ✅
+> **交付物**（两个画幅，共用同一条 120 BPM 音乐床与同一套切点）
+>
+> | 版本 | 文件 | 规格 | 子代理评审 | 重复度 |
+> |---|---|---|---|---|
+> | **横版 16:9** | [`city-night-timelapse-20s.mp4`](./city-night-timelapse-20s.mp4) | 1920×1080 / 30 fps / 20.000 s / 33.86 MB | **97.3 / 100** ✅ | **0.0 / 100** |
+> | **竖版 9:16** | [`vertical/city-night-timelapse-9x16-20s.mp4`](./vertical/city-night-timelapse-9x16-20s.mp4) | 1080×1920 / 30 fps / 20.000 s / 33.32 MB | **97.4 / 100** ✅ | **0.0 / 100** |
+>
+> 📘 完整制作文档（素材获取 → 软件安装 → 对拍/渲染/调色 → 验收/评分 → 踩坑记录）：
+> [`DOCUMENTATION.md`](./DOCUMENTATION.md) ｜ 离线网页版 [`DOCUMENTATION.html`](./DOCUMENTATION.html)（由 `tools/render_doc.py` 渲染）。
+> 本 README 是**速查版**：只放结论、关键参数、实测数据与复现命令。
 
-一条节奏感强的「城市夜景」延时风格混剪：10 个镜头，切点全部落在 120 BPM 的**拍点网格**上，长短镜交替（1.0–3.5 s）形成张弛，每一刀都压在鼓点上；首尾有淡入淡出，中段第 10.0 s 处有一次柔化高光闪烁作强调。打开 `index.html` 可同屏对照播放两个版本。
+一条节奏感强的「城市夜景」延时风格混剪：10 个镜头，切点全部落在 120 BPM 的**拍点网格**上，
+长短镜交替（1.5–3.5 s）形成张弛，每一刀都压在鼓点上；首尾有淡入淡出，中段第 10.0 s 处有一次柔化高光闪烁作强调。
+打开 `index.html` 可同屏对照播放两个版本。
 
 ---
 
-## 一、素材来源（全部免版权 / 可商用）
+## 一、要求对照（速查）
+
+| 要求 | 完成情况 | 证据位置 |
+|---|---|---|
+| 免版权素材 | 3 支 Pexels 免费素材（免费商用、免署名）+ 1 首 **CC0 1.0** 音乐 | §一 素材来源；`tools/fetch_assets.sh` 固化 sha256 |
+| 真实城市夜景延时（非图片/合成） | 实拍素材：4K60 俯瞰车流、DJI 航拍环岛、街头车流拖尾 | §一；`qc-contact-sheet.jpg` 抽帧可查 |
+| 时长 20 秒 | **20.000 s / 600 帧**（逐帧全解码核对） | §二 规格；`verify.py` 第 1、2 项 |
+| 节奏感音乐 | 原曲 127.95 BPM → `atempo` 精确拉到 120 BPM；10 刀切点低频强调 0.80/2.40/2.58/…/2.33 | §四 节奏设计 |
+| 交付 mp4 | 横竖两版 mp4（H.264 High@4.1 + AAC，`+faststart`） | §二 规格 |
+| 文档（素材→软件→合成全流程） | `DOCUMENTATION.md`（13 节）+ 网页版 | 本仓库根目录 |
+| 全部产出物入库（脚本/代码/软件安装包） | 成片、脚本、工具、**ffmpeg 安装包（wheel）**、sha256 锁、报告 | §八 文件清单 |
+| 子代理评分，<80 分给建议并重生成 | 第 1 轮 **79.7 未达标** → 返工 → 第 3 轮 **97.3 / 97.4** 通过 | §六 评审；`review/scorecard-*.md` |
+| 画面重复度太高（追加反馈） | 六种「同素材多机位」手法重剪，重复度 **0.0 / 100**（45 对镜头零撞脸） | §三 降重复设计 |
+
+## 二、素材来源（全部免版权 / 可商用）
 
 | 用途 | 文件 | 原始出处 | 许可 |
 |---|---|---|---|
-| 镜头 A ×4 | `216-speed-night-city-cars.mp4`（4K 60fps，俯瞰城市夜景车流） | [pexels](https://www.pexels.com) 免费素材，转载于 [sugianand/11planner](https://github.com/sugianand/11planner/tree/master/frontend/public/city) | Pexels License（免费商用、无需署名） |
-| 镜头 B ×4 | `233-eagle-drone-roundabout.mp4`（DJI 夜景俯瞰环岛，含定位元数据 `-03.7332 -038.4974`） | 同上（sugianand/11planner） | Pexels License |
-| 镜头 C ×2 | `211-speed-city.mp4`（街头车流拖尾 / 长曝光感） | 同上（sugianand/11planner） | Pexels License |
-| 音乐 | `Shenzhen Nightlife`（128 BPM 电子曲） | FreePD / Kevin MacLeod → 收录于 [SoundSafari/CC0-1.0-Music](https://github.com/SoundSafari/CC0-1.0-Music) | **CC0 1.0**（公有领域，无任何限制） |
+| 镜头 A **×4** | `216-speed-night-city-cars.mp4`（4K60，俯瞰城市夜景车流） | [Pexels](https://www.pexels.com) 免费素材，转载于 [sugianand/11planner](https://github.com/sugianand/11planner/tree/master/frontend/public/city) | Pexels License（免费商用、无需署名） |
+| 镜头 B **×3** | `233-eagle-drone-roundabout.mp4`（DJI 夜景俯瞰环岛，含定位元数据 `-03.7332 -038.4974`） | 同上 | Pexels License |
+| 镜头 C **×3** | `211-speed-city.mp4`（街头车流拖尾 / 长曝光感） | 同上 | Pexels License |
+| 音乐 | `Shenzhen Nightlife`（128 BPM 电子曲，263.1 s） | FreePD / Kevin MacLeod → 收录于 [SoundSafari/CC0-1.0-Music](https://github.com/SoundSafari/CC0-1.0-Music) | **CC0 1.0**（公有领域，无任何限制） |
 
-- 视频文件名的数字前缀是素材站的素材编号（`216-`、`233-`、`211-`），仓库 `frontend/public/{city,nature,cafe,abstract,anime}/` 目录结构与 `216-speed-night-city-cars`、`917-slow-skyscrapers` 等命名方式与 Pexels 视频素材库一致，故按 Pexels 免费素材使用。
-- 音乐为 CC0 1.0，无需署名；此处仍标注作者以示尊重。
-- 生成脚本、中间产物均不含任何付费或受限素材。
+- 文件名的数字前缀（`216-`、`233-`、`211-`）与 `frontend/public/{city,nature,cafe,abstract,anime}/` 的分类结构符合 Pexels 素材库命名规范，故按 Pexels 免费素材使用；音乐 CC0 无需署名，此处仍标注作者以示尊重。
+- 一键获取（含逐个 sha256 校验）：`bash tools/fetch_assets.sh`（默认落 `/tmp/foot`、`/tmp/music`）。
+- **素材上限说明**：受限网络下（素材站 CDN 不可达、GitHub 命中多为 Git LFS 指针）可达的合规夜景素材就是这 3 支，
+  想换新素材请看 `DOCUMENTATION.md` §5.5 的完整探索结论与替换方法（`SOURCES` 里加 `src="D"` 即可）。
 
-## 二、成片规格
+## 三、成片规格
 
 ### 横版 16:9（根目录）
 
@@ -29,45 +53,99 @@
 |---|---|
 | 时长 | **20.000 s**（精确 600 帧 @ 30 fps，首帧到末帧全解码） |
 | 画面 | 1920×1080（16:9），H.264 **High Profile / Level 4.1**，CRF 19，yuv420p，`+faststart` |
-| 音频 | AAC-LC 192 kbps / 48 kHz / 立体声，整体响度 ≈ −14 LUFS（`loudnorm I=-14 TP=-1.5`，实测 RMS −15.4 dBFS） |
-| 结构 | 10 个镜头、切点均为 0.5 s 拍点整数倍（时长 3.0/2.0/1.5/1.0/2.5/1.0/1.5/2.0/2.0/3.5 s），硬切；首 0.35 s 淡入、19.45 s 起 0.55 s 淡出 |
+| 音频 | AAC-LC 48 kHz 立体声，整体响度 ≈ −14 LUFS（`loudnorm I=-14 TP=-1.5`，实测 RMS −15.3 dBFS） |
+| 结构 | 10 个镜头、切点均为 0.5 s 拍点整数倍（时长 3.0/2.0/1.5/2.0/1.5/1.5/2.0/1.5/1.5/3.5 s），硬切；首 0.35 s 淡入、19.45 s 起 0.55 s 淡出 |
 | 强调 | 9.94–10.14 s 一次柔化高光闪烁，峰值正好压在 10.0 s 那一刀上 |
 | 调色 | 对比 +9%、饱和 +18%、gamma 1.04、暗部抬升 3.5%（`colorlevels`）、暗角、胶片颗粒 |
-| 码率/体积 | ≈ 12.05 Mbps / **30.1 MB** |
+| 码率/体积 | 13.54 Mbps / **33.86 MB** |
 
 ### 竖版 9:16（`vertical/`）
 
 | 项目 | 规格 |
 |---|---|
 | 时长 | **20.000 s**（精确 600 帧 @ 30 fps） |
-| 画面 | 1080×1920，H.264 High@4.1，CRF 19，yuv420p，`+faststart`，≈13.19 Mbps / **33.0 MB** |
+| 画面 | 1080×1920，H.264 High@4.1，CRF 19，yuv420p，`+faststart` |
+| 码率/体积 | 13.33 Mbps / **33.32 MB** |
 | 音频 | 与横版**逐帧相同**的音乐床（同一条 120 BPM 渲染结果、同一套切点） |
 | 取景 | 源为 16:9，竖版只取源画面 9/16 的宽度：先按每支镜头主体位置裁出 810×1440（1080p 源裁 608×1080）竖窗口，再做推拉/摇移；摇移镜头在竖窗口内横扫，冲击力比横版更强 |
-| 自检 | `python3 verify.py --variant portrait` → 12 项全部 PASS（含「无冻帧」与「切点硬切」） |
+| 自检 | `python3 verify.py --variant portrait` → 12 项全部 PASS |
 
-## 三、节奏设计（音画同步是怎么做的）
+## 四、降重复设计（v3 核心：把 3 支素材做成 10 台机位）
 
-1. **取段**：在原始 128 BPM 的 《Shenzhen Nightlife》里自动搜索“低频底鼓最密集 + 整体能量最高”的 20 秒段落（最终落在原曲 191.75 s – 211.75 s）。
-2. **变速对拍**：用 `atempo=0.9375` 把 128 BPM 精确拉到 **120 BPM**；随后对渲染结果做低频起音分析，闭环校验实测节拍周期（实测 119.80 BPM，周期偏差 0.17%）。
-3. **网格对齐**：以 0.005 s 步长扫描 0.5 s 网格的相位偏移，选取让 10 个剪切点处**低频能量最重**的偏移量（成品实测：偏移 0 s 的强调 1.99× vs 偏移 0.25 s 的 1.25×；后 9 刀逐刀强调 1.96/2.54/2.28/2.07/2.14/2.33/2.16/2.55/2.50）。
-4. **切点**：全部切点都是 **0.5 s 拍点的整数倍**（拍点 = 120 BPM 的八分音符网格），因此每一刀都天然落在鼓点上；镜头长度在 1.0–3.5 s 之间交替（6 种时长），快剪与长镜形成张弛，而不是等长切分。
-5. **镜头语法**：切点处同时切换机位（俯拍街景 → 街头平视 → 航拍俯瞰），并配合推拉/摇移（zoompan）做运动变化，避免同一构图疲劳；4K 素材下采样 + 60fps 素材 2× 播放，保证延时加速后的顺滑（低帧率机位用 motion-interpolation 补帧）。
+只有 3 支素材要撑 10 个镜头，v2 的做法是重复使用同一素材、取景相近，观感重复（重复度 **8.9 / 100**，4 对镜头撞脸）。
+v3 用**六种「同素材多机位」手法**把每次出现都做成另一台摄像机拍的画面：
 
-## 四、自检结果（`python3 verify.py`）
+| 手法 | 实现 | 用在哪 | 效果 |
+|---|---|---|---|
+| **水平镜像** | `hflip` | 镜头 3、7、10 | 灯带与车流方向左右互换，同一条街读成两处地点 |
+| **倒放** | `reverse` | 镜头 4、7、9 | 车流/环绕方向反转，像另一条时间线的机位 |
+| **局部特写** | `zoom` 2.15–2.45 | 镜头 3、4、8、9 | 放大到素材角落（车灯细部、楼顶霓虹），与全景彻底脱开 |
+| **多取景窗口** | `cx` / `cy`（0=左/上，1=右/下） | 镜头 3、4、8、9、10 | 同一素材的左/中/右/上/下窗口互不重叠 |
+| **色调微差** | `colorbalance` 幅度 ≤0.04 | 镜头 2–8 | 冷暖交替，相邻镜头色彩分布分离，又察觉不到刻意 |
+| **运动方向变化** | `zoompan` 推近/拉远 + 横扫 l→r / r→l | 全部 10 镜 | 同一素材「推近」与「拉远」观感差别接近两台机位 |
+
+**硬规则**：① **相邻镜头绝不同源**（A→B→C→B→A→C→A→B→C→A）；② 同素材每次出现换手法组合；
+③ 每镜保留 ≥0.11 推拉幅度（防冻帧，见 §五 注）；④ 用工具事后验收，而不是靠「感觉不重复了」。
+
+**验收（`tools/repetition_audit.py`，任意两镜撞脸检测）**：把 10 个镜头中段帧缩略到 160×90 后**两两比对 45 对**，
+同时满足「缩略图平均绝对差 MAD < 0.12」且「直方图 JS 散度 < 0.12」判为「看上去是同一个画面」，
+**重复度评分 = 重复对数 ÷ 总对数 × 100**：
+
+| 版本 | 做法 | 重复度 | 高度重复对 |
+|---|---|---|---|
+| v2（观众反馈的版本） | 居中取景为主，A/B/C 各用 4/4/2 次 | 8.9 / 100 | 4 对 |
+| v3 | 六种手法全开 | 2.2 / 100 | 1 对 |
+| v3.1 | B 素材两次使用改成局部特写 | 2.2 / 100 | 1 对 |
+| **v3.2（最终）** | 第 7 镜再加「倒放 + 横扫」 | **0.0 / 100** | **0 对** |
+
+横版实测 MAD 0.196 / JSD 0.044，竖版 MAD 0.215 / JSD 0.059，两版都是 **0 对重复**。
+
+镜头表（最终版，横竖共用；竖版仅换取景窗口 `PORTRAIT_PX`）：
+
+| # | 起点 | 时长 | 源 | 源起点 | 倍速 | 取景与手法 | 色调 |
+|---|---|---|---|---|---|---|---|
+| 1 | 0.0 | 3.0 | A | 1.20 | 1.60× | 居中全景，推近 1.00→1.16 | 中性 |
+| 2 | 3.0 | 2.0 | B | 1.00 | 1.30× | 环岛拉远 1.24→1.02 | 冷 |
+| 3 | 5.0 | 1.5 | C | 0.30 | 1.00× | **镜像** + 特写 1.90→2.02，窗口 0.42 | 暖 |
+| 4 | 6.5 | 2.0 | B | 6.20 | 1.40× | **倒放 + 2.3× 特写**（左下区车灯），窗口 (0.18, 0.80) | 冷 |
+| 5 | 8.5 | 1.5 | A | 10.20 | 1.90× | 局部 1.50× + **右→左横扫** | 冷 |
+| 6 | **10.0** | 1.5 | C | 2.60 | 1.05× | 宽景拉远 1.15→1.03 | 暖 |
+| 7 | 11.5 | 2.0 | A | 16.60 | 1.70× | **镜像 + 倒放 + 左→右横扫** | 冷 |
+| 8 | 13.5 | 1.5 | B | 13.20 | 1.30× | **2.15× 特写**（右上区高楼），窗口 (0.84, 0.18) | 暖 |
+| 9 | 15.0 | 1.5 | C | 4.20 | 1.00× | **倒放** + 最左窗口 0.22，推近 1.45→1.56 | 中性 |
+| 10 | 16.5 | 3.5 | A | 18.90 | 1.30× | **镜像** + 右窗口 0.68，拉远 1.28→1.02 | 中性 |
+
+> t=10.0 s 既是剪切点也是闪烁强调点；切点序列 0 / 3.0 / 5.0 / 6.5 / 8.5 / 10.0 / 11.5 / 13.5 / 15.0 / 16.5。
+
+## 五、节奏设计（音画同步是怎么做的）
+
+1. **取段**：在原始 128 BPM 的《Shenzhen Nightlife》里自动搜索「低频底鼓最密集 + 整体能量最高」的 20 秒段落。
+2. **变速对拍**：`atempo=0.9375` 把 128 BPM 精确拉到 **120 BPM**；再对渲染结果做低频起音分析闭环校验（实测 119.8 BPM，周期偏差 <0.2%）。
+3. **网格对齐**：以 0.005 s 步长扫描 0.5 s 网格相位，选取让 10 个切点处**低频能量最重**的偏移（成品实测：偏移 0 s 强调 **1.98×** vs 偏移 0.25 s 的 1.26×）。
+4. **切点**：全部切点都是 0.5 s 拍点整数倍 → 每一刀天然落在鼓点上；镜头长度在 1.5–3.5 s 之间交替（4 种时长）形成张弛，而非等长切分。
+5. **镜头语法**：切点处同时切换机位（俯拍街景 → 街头平视 → 航拍俯瞰）并配合推拉/摇移；4K 素材下采样 + 60fps 素材加速播放保证延时感顺滑，低帧率机位用运动插值补帧。
+
+**实测切点低频强调系数**（后 9 刀全部 ≥1.8×，第 1 刀落在淡入区属正常）：
+
+```
+0.80  2.40  2.58  2.28  2.20  1.84  2.47  2.20  2.53  2.33
+```
+
+## 六、自检结果（`python3 verify.py`，12 项）
 
 ```
 文件      : city-night-timelapse-20s.mp4
-容器/大小 : mov,mp4,m4a,3gp,3g2,mj2 / 30.12 MB / 12.05 Mbps
+容器/大小 : mov,mp4,m4a,3gp,3g2,mj2 / 33.86 MB / 13.54 Mbps
 视频      : h264 1920x1080 30/1 fps, 600 帧
 音频      : aac 48000 Hz 2ch
 时长      : 20.000 s
-切点低频强调系数: 0.80 1.96 2.54 2.28 2.07 2.14 2.33 2.16 2.55 2.50
-0.5s 网格强调: 偏移0.0s=1.99x  偏移0.25s=1.25x   ← 明显偏向“切点=拍点”
-整体 RMS  : -15.4 dBFS
-帧间差分  : 均值 6.91 / 中位 4.28
+切点低频强调系数: 0.80 2.40 2.58 2.28 2.20 1.84 2.47 2.20 2.53 2.33
+0.5s 网格强调: 偏移0.0s=1.98x  偏移0.25s=1.26x   ← 明显偏向“切点=拍点”
+整体 RMS  : -15.3 dBFS
+帧间差分  : 均值 9.41 / 中位 5.93
 冻帧      : 0 处（阈值 diff<0.35）
-镜头内最小运动: 1.29 2.15 2.98 19.92 3.90 3.46 9.50 3.46 2.31 2.42
-切点跳跃量   : 47 48 61 45 63 52 48 43 44
+镜头内最小运动: 2.03 3.86 9.07 1.53 11.55 8.60 7.35 2.11 9.49 2.39
+切点跳跃量   : 48 60 58 58 59 52 57 55 58
 
 [PASS] 时长 20.000s (±0.02)      [PASS] 600 帧 @30fps
 [PASS] 1920x1080                [PASS] 含音轨
@@ -77,89 +155,108 @@
 [PASS] 9 个切点均为硬切            [PASS] 抽帧图生成
 ```
 
-> 第 1 个切点（t=0）的强调系数偏低是正常的：它落在淡入区间，是“起拍”而不是重鼓点。第 2–10 个切点全部 ≥ 1.96×。  
-> `qc-contact-sheet.jpg` 是 10 个镜头各抽一帧拼成的画面自检图。  
-> “冻帧”检查曾抓到过一次真实缺陷：`zoompan` 变速后每支慢速机位会少 1–3 帧，`tpad` 的安全克隆帧在切点前形成短暂停顿。解决办法是给每个镜头多取 0.4 s 素材余量，再用 `-frames:v` 精确截断 —— 现在 600 帧零重复帧。
+竖版同样 **12/12 通过**（1080×1920；镜头内最小运动 1.59–10.80、切点跳跃 52–65）。
 
-## 五、独立评审子代理（80 分及格线）
+> **冻帧检查的价值**：v3 初版曾报 7 处冻帧 + 镜头 1 最小帧间差 0.00（原因是镜头 1 起点落在低变化区、且 4 个机位设成了固定缩放）。
+> 修法是换起点 + 给每个固定机位补 ≥0.11 的缓慢推拉，修复后 600 帧零重复帧。教训：**「静止机位」在逐帧差分验收里不安全**。
 
-`review/review_agent.py` 只读成片做黑盒测量，6 维度 100 分制评分；**< 80 分必须给出优化建议并重新生成**：
+## 七、独立评审子代理（80 分及格线）
+
+`review/review_agent.py` 不参与渲染、只把成片当黑盒现场测量，6 维度 100 分制；
+**< 80 分必须给出优化建议并重新生成**（退出码 1，可直接接 CI）。
 
 | 维度 | 满分 | 横版 | 竖版 |
 |---|---|---|---|
 | 技术规格与兼容性 | 15 | 15.0 | 15.0 |
-| 节奏与音画同步 | 25 | 23.5 | 23.5 |
-| 运动与流畅度 | 15 | 12.1 | 13.9 |
-| 画面质量 | 20 | 18.0 | 20.0 |
+| 节奏与音画同步 | 25 | 23.7 | 23.7 |
+| 运动与流畅度 | 15 | 14.3 | 14.4 |
+| 画面质量 | 20 | 20.0 | 20.0 |
 | 剪辑结构与叙事 | 15 | 14.3 | 14.3 |
 | 合规与可复现 | 10 | 10.0 | 10.0 |
-| **总评** | **100** | **92.9 ✅** | **96.8 ✅** |
+| **总评** | **100** | **97.3 ✅** | **97.4 ✅** |
 
-- 第 1 轮（v1）横版 **79.7 分未达标** → 评分卡给出建议 → 按建议返工重渲 → 第 2 轮 **92.9 分通过**。
-- 评分卡与返工前后对比：`review/scorecard-landscape-round1.md`、`review/scorecard-landscape.md`、`review/scorecard-portrait.md`（同名 JSON 附带全部实测数值与 `suggestions` 字段）。
+**三轮记录**（全部评分卡入库）：
+
+| 轮次 | 成片 | 总分 | 结论 |
+|---|---|---|---|
+| 第 1 轮 | v1 横版（10×2.0 s 等长切分、无淡入淡出、死黑 29%） | **79.7** | ❌ 未达标 → 出建议并重新生成 |
+| 第 2 轮 | v2 横版 / 竖版（长短镜对比、淡入淡出、抬暗部） | 92.9 / 96.8 | ✅ 通过 |
+| 第 3 轮 | **v3 横版 / 竖版（降重复重剪）** | **97.3 / 97.4** | ✅ 通过（重复度 0.0） |
 
 ```bash
-cd deliverables
 python3 review/review_agent.py --variant landscape   # 退出码 0 = 通过；1 = 未达标
 python3 review/review_agent.py --variant portrait
+python3 tools/repetition_audit.py city-night-timelapse-20s.mp4   # 重复度体检（黑盒找切点）
 ```
 
-## 六、复现
+## 八、复现（从零到成片）
 
 ```bash
-bash tools/install-toolchain.sh                     # 装 ffmpeg/ffprobe（仓库内 wheel + npm 包，sha256 校验）
+# 0) 工具链：解压仓库自带安装包（ffmpeg 7.0.2 + ffprobe 5.2 静态二进制）+ Python 依赖
+bash tools/install-toolchain.sh
 export FFMPEG=~/.local/share/citynight/ffmpeg FFPROBE=~/.local/share/citynight/ffprobe
 
-# 1) 取素材（示例：用 GitHub API 拉取转载文件；音乐为 CC0 仓库中的 freepd 曲目）
-mkdir -p /tmp/foot /tmp/music
-#   /tmp/foot/night_city_cars.mp4            ← sugianand/11planner : frontend/public/city/216-speed-night-city-cars.mp4
-#   /tmp/foot/233-eagle-drone-roundabout.mp4 ← 同仓库 : frontend/public/city/233-eagle-drone-roundabout.mp4
-#   /tmp/foot/211-speed-city.mp4             ← 同仓库 : frontend/public/city/211-speed-city.mp4
-#   /tmp/music/m_shenzhen.mp3                ← SoundSafari/CC0-1.0-Music : freepd.com/Shenzhen Nightlife.mp3
+# 1) 素材：GitHub API 拉取 3 支 Pexels 素材 + CC0 音乐，逐个 sha256 校验（约 124 MB）
+bash tools/fetch_assets.sh            # → /tmp/foot/{night_city_cars,...}.mp4、/tmp/music/m_shenzhen.mp3
 
-# 2) 横版：一键构建（默认工作目录 /tmp/city_night_build）
-python3 build.py --stage all        # 输出 city-night-timelapse-20s.mp4
-python3 verify.py                   # 12 项自检（规格 / 节奏 / 运动流畅度 / 抽帧）
+# 2) 横版：音乐对拍 → 10 个镜头 → 合成调色（2 vCPU 约 8–10 分钟）
+python3 build.py --stage all          # → city-night-timelapse-20s.mp4
+python3 verify.py                     # 12 项自检
 
-# 3) 竖版：复用上面已对好拍的音乐床，只换画布与取景
-python3 build_portrait.py           # 输出 vertical/city-night-timelapse-9x16-20s.mp4
+# 3) 竖版：复用同一音乐床与镜头表，只换画布与取景
+python3 build_portrait.py             # → vertical/city-night-timelapse-9x16-20s.mp4
 python3 verify.py --variant portrait
 
-# 4) 评审（80 分门槛）
-python3 review/review_agent.py --variant landscape && python3 review/review_agent.py --variant portrait
+# 4) 验收：子代理评分 + 重复度体检
+python3 review/review_agent.py --variant landscape
+python3 review/review_agent.py --variant portrait
+python3 tools/repetition_audit.py city-night-timelapse-20s.mp4 --json reports/rep-landscape.json
+
+# 5) 预览（带 HTTP Range，可拖动播放）
+python3 serve.py . 8080               # 浏览器打开 http://localhost:8080/
 ```
 
-> 三支视频文件在上游仓库中不是 Git LFS 指针而是**真实二进制**，因此可用
-> `gh api repos/<repo>/git/blobs/<sha> --jq .content | base64 -d` 直接取回（GitHub 单文件上限 100 MB）。
+- `build.py` 分三段可独立执行：`--stage music`（音乐床）/ `--stage video`（10 个镜头）/ `--stage final`（合成调色混流），中间产物在 `/tmp/city_night_build/`（竖版 `/tmp/city_night_v/`）。
+- 长任务用 `BUILD_RESUME=1` 断点续渲：已存在且帧数正确的片段会跳过。
+- **可复现性**：流程是确定性的——同一素材 + 同一镜头表重跑，成片**逐字节一致**（横版 33,861,552 B、竖版 33,318,316 B）。
 
-`build.py` 分三段可独立执行：`--stage music`（对拍音乐床）、`--stage video`（10 个镜头）、`--stage final`（合成 + 调色 + 混流），中间产物在 `/tmp/city_night_build/`。长任务可用 `BUILD_RESUME=1` 断点续渲（已存在且帧数正确的片段会跳过）。
-
-FFmpeg 滤镜要点：
+FFmpeg 滤镜要点（单镜 → 成片）：
 
 ```
-zoompan(z=起始→结束, x/y 居中或摇移, d=1)  →  setpts=PTS/倍速
-  →  minterpolate(fps=30, mci/aobmc/bidir)  →  tpad(克隆兜底)  →  fps=30
-  →  concat  →  eq(对比/饱和/gamma) + colorlevels(抬暗部) + vignette + noise
-  →  overlay(柔化高光闪烁) + fade(淡入/淡出)
-  →  loudnorm(I=-14, TP=-1.5) + afade  →  H.264 High@4.1 + AAC-LC
+# 降重复（放在最前）：reverse（倒放）/ hflip（镜像）
+zoompan(z=起始→结束, x/y 居中|摇移|偏窗, d=1)  →  setpts=PTS/倍速
+  →  minterpolate(fps=30, mci/aobmc/bidir，仅当有效帧率<28fps)  →  tpad(克隆兜底)  →  fps=30
+  →  concat  →  colorbalance(冷暖微差) + eq(对比1.09/饱和1.18/gamma1.04) + colorlevels(暗部+3.5%)
+  →  vignette + noise(alls=4)  →  overlay(柔化高光闪烁) + fade(in 0.35s / out 0.55s)
+  →  loudnorm(I=-14, TP=-1.5) + afade  →  H.264 High@4.1 + AAC-LC + faststart
 ```
 
-## 七、文件清单
+## 九、文件清单
 
 | 文件 | 说明 |
 |---|---|
-| `city-night-timelapse-20s.mp4` | **横版成片**（30.1 MB，评审 92.9） |
-| `vertical/city-night-timelapse-9x16-20s.mp4` | **竖版成片**（33.0 MB，9:16，评审 96.8） |
-| `index.html` | 本地播放页（横竖双版本对照 + 下载），随附 `serve.py` 可起带 Range 的静态服务 |
-| `poster.jpg` / `vertical/poster-9x16.jpg` | 封面帧 |
-| `qc-contact-sheet.jpg` / `vertical/qc-contact-sheet-9x16.jpg` | 10 个镜头各抽一帧的画面自检图 |
-| `build.py` | 横版构建脚本（音乐对拍 / 镜头渲染 / 合成调色三段，支持 `BUILD_RESUME=1`） |
-| `build_portrait.py` | 竖版构建脚本（复用横版音乐床与镜头表，只换画布与取景） |
+| `city-night-timelapse-20s.mp4` | **横版成片**（33.86 MB，评审 97.3，重复度 0.0） |
+| `vertical/city-night-timelapse-9x16-20s.mp4` | **竖版成片**（33.32 MB，评审 97.4，重复度 0.0） |
+| `index.html` · `serve.py` | 本地播放页（横竖对照 + 下载）与带 Range 的静态服务 |
+| `poster.jpg` · `vertical/poster-9x16.jpg` | 封面帧 |
+| `qc-contact-sheet.jpg` · `vertical/qc-contact-sheet-9x16.jpg` | 10 个镜头各抽一帧的画面自检图 |
+| `build.py` · `build_portrait.py` | 横版 / 竖版构建脚本（音乐对拍 / 镜头渲染 / 合成调色，支持 `BUILD_RESUME=1`） |
 | `verify.py` | 12 项自动验收，`--variant landscape\|portrait` 切换画幅 |
-| **`DOCUMENTATION.md`** | **完整制作文档**：环境约束、软件清单、素材获取、音乐对拍、滤镜链、踩坑修复记录、逐条复现命令 |
-| `review/review_agent.py` | **独立评审子代理**：只读成片，6 维度 100 分现场测量打分，80 分及格线 + 自动生成返工建议 |
-| `review/scorecard-landscape.md` / `.json` | 横版第 2 轮评分卡（92.9） |
-| `review/scorecard-landscape-round1.md` / `.json` | 横版第 1 轮评分卡（79.7，返工依据） |
-| `review/scorecard-portrait.md` / `.json` | 竖版评分卡（96.8） |
-| `review/README.md` | 评审方法、轮次记录与返工对照 |
-| `tools/` | 工具链：`install-toolchain.sh` + `toolchain.lock.json`（sha256）+ **ffmpeg 安装包（wheel）入库** |
+| `tools/repetition_audit.py` | **重复度体检**：任意两镜撞脸检测（评分 + 高度重复对清单） |
+| `tools/install-toolchain.sh` · `tools/toolchain.lock.json` | 工具链一键安装 + 版本与 sha256 锁文件 |
+| `tools/packages/imageio_ffmpeg-0.6.0-*.whl` | **软件安装包**（28.1 MB，内含 ffmpeg 7.0.2 静态二进制） |
+| `tools/fetch_assets.sh` | 素材一键获取（3 支视频 + 1 首 CC0 音乐，逐个 sha256 校验） |
+| `tools/render_doc.py` | 文档渲染：`DOCUMENTATION.md` → 离线单文件 `DOCUMENTATION.html` |
+| `review/review_agent.py` · `review/README.md` | **独立评审子代理**（6 维度 100 分 + 80 分门禁）与评审方法说明 |
+| `review/scorecard-landscape.{md,json}` · `scorecard-portrait.{md,json}` | 最新评分卡（97.3 / 97.4） |
+| `review/scorecard-landscape-v2.{md,json}` · `scorecard-landscape-round1.{md,json}` | 历史轮次（92.9 / 79.7，返工依据） |
+| `reports/rep-landscape.{md,json}` · `reports/rep-portrait.{md,json}` | 重复度体检报告（0.0 / 100，45 对镜头明细）｜说明见 `reports/README.md` |
+| `DOCUMENTATION.md` · `DOCUMENTATION.html` | **完整制作文档**：环境约束、软件清单、素材获取、对拍算法、滤镜链、三轮返工、踩坑记录、逐条复现命令 |
+
+---
+
+## 十、已知限制
+
+- **素材数量**：受限网络下可达的合规夜景素材上限为 3 支（详见 `DOCUMENTATION.md` §5.5）；已用六种手法把重复度压到 0，但「独特素材源数量」这一项仍是评分卡的固定失分点。
+- **竖版画质**：竖版从 16:9 源裁切，1080p 的 C 素材需放大 1.78×，极限特写镜头的锐度略低于横版。
+- **可选打磨**（评分卡自动列出）：暗部再抬一档（死黑占比）、切点低频强调均值再高一点（当前 2.28×，满分行 2.6×）——均属环境/素材约束而非剪辑缺陷。
