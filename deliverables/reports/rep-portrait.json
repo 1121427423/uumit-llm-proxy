@@ -1,0 +1,89 @@
+{
+  "video": "vertical/city-night-timelapse-9x16-20s.mp4",
+  "shots": 10,
+  "shot_ranges": [
+    [
+      0.0,
+      3.0
+    ],
+    [
+      3.0,
+      5.0
+    ],
+    [
+      5.0,
+      6.27
+    ],
+    [
+      6.27,
+      8.5
+    ],
+    [
+      8.5,
+      10.0
+    ],
+    [
+      10.0,
+      11.5
+    ],
+    [
+      11.5,
+      13.5
+    ],
+    [
+      13.5,
+      15.0
+    ],
+    [
+      15.0,
+      16.5
+    ],
+    [
+      16.5,
+      20.0
+    ]
+  ],
+  "n_pairs": 45,
+  "duplicate_pairs": 0,
+  "repetition_score": 0.0,
+  "mean_thumb_mad": 0.215,
+  "mean_hist_jsd": 0.059,
+  "most_similar": [
+    {
+      "i": 1,
+      "j": 5,
+      "thumb_mad": 0.165,
+      "hist_jsd": 0.006,
+      "duplicate": false
+    },
+    {
+      "i": 1,
+      "j": 10,
+      "thumb_mad": 0.177,
+      "hist_jsd": 0.033,
+      "duplicate": false
+    },
+    {
+      "i": 5,
+      "j": 7,
+      "thumb_mad": 0.179,
+      "hist_jsd": 0.003,
+      "duplicate": false
+    },
+    {
+      "i": 1,
+      "j": 7,
+      "thumb_mad": 0.181,
+      "hist_jsd": 0.007,
+      "duplicate": false
+    },
+    {
+      "i": 5,
+      "j": 10,
+      "thumb_mad": 0.185,
+      "hist_jsd": 0.048,
+      "duplicate": false
+    }
+  ],
+  "duplicates": []
+}

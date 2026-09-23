@@ -26,7 +26,7 @@ WORK = os.environ.get("BUILD_WORKDIR_V", "/tmp/city_night_v")
 OUT_MP4 = os.path.join(OUT_DIR, "city-night-timelapse-9x16-20s.mp4")
 
 # px/py : 竖窗口在源画面中的位置（0=左/上，1=右/下）
-PORTRAIT_PX = [0.50, 0.50, 0.50, 0.50, 0.46, 0.56, 0.50, 0.52, 0.50, 0.48]
+PORTRAIT_PX = [0.50, 0.50, 0.42, 0.28, 0.50, 0.50, 0.50, 0.72, 0.22, 0.68]
 
 # 时长 / 变速 / 运镜全部继承横版 SHOTS（切点逐帧一致），只把取景改为竖版窗口位置。
 PORTRAIT_SHOTS = [dict(**sh, px=px) for sh, px in zip(B.SHOTS, PORTRAIT_PX)]
@@ -43,7 +43,12 @@ def shot_filter(sh, tag):
     win_w = even(sh_ * W / H)          # 源中 9:16 竖窗口的宽（A/B: 810, C: 608）
     x0 = min(max(even((sw - win_w) * sh.get("px", 0.5)), 0), sw - win_w)
     n_in = max(2, int(round(sh["dur"] * sh["speed"] * sfps)))
-    vf = [f"crop={win_w}:{sh_}:{x0}:0"]
+    vf = []
+    if sh.get("reverse"):
+        vf.append("reverse")
+    if sh.get("mirror"):
+        vf.append("hflip")
+    vf.append(f"crop={win_w}:{sh_}:{x0}:0")
     moving = abs(z1 - z0) > 1e-6 or bool(sh.get("pan"))
     if not moving:
         if z0 > 1.0005:
@@ -60,6 +65,11 @@ def shot_filter(sh, tag):
             xexpr = "iw/2-(iw/zoom/2)"
         vf.append(f"zoompan=z='{zexpr}':d=1:x='{xexpr}':y='ih/2-(ih/zoom/2)'"
                   f":s={W}x{H}:fps={B.FPS}")
+    tone = sh.get("tone")
+    if tone == "warm":
+        vf.append("colorbalance=rm=0.030:gm=0.008:bm=-0.030")
+    elif tone == "cool":
+        vf.append("colorbalance=rm=-0.028:bm=0.038")
     vf.append(f"setpts=PTS/{sh['speed']}")
     if sfps / sh["speed"] < 28.0:
         # 与横版保持完全一致的补帧参数（见 build.py；vsbmc=0 更快且画质无差异）
@@ -83,7 +93,10 @@ def build_shots():
         vf = shot_filter(sh, sh["src"])
         print(f"  [竖直镜头 {idx + 1:02d}] {sh['dur']:.1f}s @ {B.CUT_TIMES[idx]:.1f}s "
               f"{sh['src']} t={sh['t']} 速度x{sh['speed']} {sh['pan'] or ''} "
-              f"zoom={sh['zoom']} px={sh.get('px')}")
+              f"zoom={sh['zoom']} px={sh.get('px')}"
+              f"{' 倒放' if sh.get('reverse') else ''}"
+              f"{' 镜像' if sh.get('mirror') else ''}"
+              f"{' ' + sh['tone'] if sh.get('tone') else ''}")
         B.run([B.FF, "-y", "-v", "error",
                "-ss", f"{sh['t']}", "-t", f"{sh['dur'] * sh['speed'] + 0.4}",
                "-i", B.SOURCES[sh["src"]],

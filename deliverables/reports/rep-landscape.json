@@ -1,0 +1,89 @@
+{
+  "video": "city-night-timelapse-20s.mp4",
+  "shots": 10,
+  "shot_ranges": [
+    [
+      0.0,
+      3.0
+    ],
+    [
+      3.0,
+      5.0
+    ],
+    [
+      5.0,
+      6.27
+    ],
+    [
+      6.27,
+      8.5
+    ],
+    [
+      8.5,
+      10.0
+    ],
+    [
+      10.0,
+      11.5
+    ],
+    [
+      11.5,
+      13.5
+    ],
+    [
+      13.5,
+      15.0
+    ],
+    [
+      15.0,
+      16.5
+    ],
+    [
+      16.5,
+      20.0
+    ]
+  ],
+  "n_pairs": 45,
+  "duplicate_pairs": 0,
+  "repetition_score": 0.0,
+  "mean_thumb_mad": 0.196,
+  "mean_hist_jsd": 0.044,
+  "most_similar": [
+    {
+      "i": 1,
+      "j": 10,
+      "thumb_mad": 0.128,
+      "hist_jsd": 0.008,
+      "duplicate": false
+    },
+    {
+      "i": 1,
+      "j": 7,
+      "thumb_mad": 0.134,
+      "hist_jsd": 0.006,
+      "duplicate": false
+    },
+    {
+      "i": 1,
+      "j": 5,
+      "thumb_mad": 0.138,
+      "hist_jsd": 0.009,
+      "duplicate": false
+    },
+    {
+      "i": 5,
+      "j": 10,
+      "thumb_mad": 0.14,
+      "hist_jsd": 0.011,
+      "duplicate": false
+    },
+    {
+      "i": 7,
+      "j": 10,
+      "thumb_mad": 0.143,
+      "hist_jsd": 0.01,
+      "duplicate": false
+    }
+  ],
+  "duplicates": []
+}

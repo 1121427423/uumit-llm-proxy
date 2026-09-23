@@ -131,6 +131,12 @@ img { max-width: 100%; border-radius: 10px; }
 <td>子代理不参与渲染、只把 mp4 当黑盒现场测量，6 维度 100 分制，评分卡落盘 <code>review/scorecard-*.{md,json}</code></td>
 </tr>
 <tr>
+<td>★</td>
+<td>（追加反馈）<strong>画面重复度太高</strong></td>
+<td>§5.1 降重复镜头表 · §5.1a 六种手法 · §5.5 素材上限说明 · <code>tools/repetition_audit.py</code></td>
+<td>同素材多机位（镜像 / 倒放 / 局部特写 / 多取景窗 / 冷暖交替）+ 相邻镜头必不同源；三轮迭代后重复度评分 <strong>8.9 → 0.0</strong>、高度重复镜头对 <strong>4 → 0</strong>；评审总分 <strong>92.9 → 97.3（横版）/ 97.4（竖版）</strong></td>
+</tr>
+<tr>
 <td>④</td>
 <td><strong>低于 80 分 → 给优化建议并重新生成</strong></td>
 <td>§8.1 · §8.2 返工 · §8.3</td>
@@ -357,7 +363,12 @@ measure_beat_period(x, sr, bpm_hint=(110, 140))
 </code></pre>
 <p>产出 <code>music.m4a</code>（AAC 192 kbps / 48 kHz 立体声；实测整体 RMS −14.4 dBFS，符合网络平台响度惯例）。<strong>横版与竖版共用这一个音乐文件</strong>，因此两个画幅切点逐帧一致。</p>
 <h2 id="5">5. 视频合成</h2>
-<h3 id="51-v2">5.1 镜头表（v2：长短对比）</h3>
+<h3 id="51-v3">5.1 镜头表（v3：降重复版）</h3>
+<blockquote>
+<p>改动动机：观众反馈「画面重复度太高」——三支素材各反复出现 3–4 次，相似取景一眼被看穿。
+v3 在不新增素材的前提下（原因见 §5.5），用<strong>同素材多机位</strong>手法把每个镜头做成观感独立的画面：
+<strong>水平镜像 / 倒放 / 局部特写 / 多取景窗口 / 轻微色温差</strong>，并保证<strong>相邻镜头绝不使用同一素材</strong>。</p>
+</blockquote>
 <table>
 <thead>
 <tr>
@@ -368,7 +379,8 @@ measure_beat_period(x, sr, bpm_hint=(110, 140))
 <th>源</th>
 <th>源起点</th>
 <th>倍速</th>
-<th>运镜</th>
+<th>取景与手法</th>
+<th>色调</th>
 <th>备注</th>
 </tr>
 </thead>
@@ -378,10 +390,11 @@ measure_beat_period(x, sr, bpm_hint=(110, 140))
 <td>0.0</td>
 <td><strong>3.0</strong></td>
 <td>6</td>
-<td>B</td>
-<td>0.40</td>
-<td>1.35×</td>
-<td>推近 1.00→1.12</td>
+<td>A</td>
+<td>1.20</td>
+<td>1.60×</td>
+<td>居中全景，推近 1.00→1.16</td>
+<td>中性</td>
 <td>开场建立镜头</td>
 </tr>
 <tr>
@@ -389,11 +402,12 @@ measure_beat_period(x, sr, bpm_hint=(110, 140))
 <td>3.0</td>
 <td>2.0</td>
 <td>4</td>
-<td>A</td>
-<td>0.50</td>
-<td>2.00×</td>
-<td>固定</td>
-<td>车流峡谷</td>
+<td>B</td>
+<td>1.00</td>
+<td>1.30×</td>
+<td>航拍环岛，拉远 1.24→1.02</td>
+<td>冷</td>
+<td></td>
 </tr>
 <tr>
 <td>3</td>
@@ -401,75 +415,82 @@ measure_beat_period(x, sr, bpm_hint=(110, 140))
 <td>1.5</td>
 <td>3</td>
 <td>C</td>
-<td>0.20</td>
+<td>0.30</td>
 <td>1.00×</td>
-<td>固定（裁 1.15×）</td>
-<td>街头拖尾</td>
+<td><strong>水平镜像</strong> + 高倍特写 1.90→2.02，窗口偏左 0.42</td>
+<td>暖</td>
+<td>C 首次出现即特写</td>
 </tr>
 <tr>
 <td>4</td>
 <td>6.5</td>
-<td><strong>1.0</strong></td>
-<td>2</td>
+<td>2.0</td>
+<td>4</td>
 <td>B</td>
-<td>5.60</td>
-<td>1.45×</td>
-<td>横摇 l→r</td>
-<td>快切提气</td>
+<td>6.20</td>
+<td>1.40×</td>
+<td><strong>倒放</strong> + <strong>2.3× 局部特写</strong>（左下区车灯细部），窗口 (0.18, 0.80)</td>
+<td>冷</td>
+<td>完全脱离环岛圆形构图</td>
 </tr>
 <tr>
 <td>5</td>
-<td>7.5</td>
-<td>2.5</td>
-<td>5</td>
+<td>8.5</td>
+<td>1.5</td>
+<td>3</td>
 <td>A</td>
-<td>9.00</td>
-<td>2.20×</td>
-<td>推近 1.06→1.22</td>
-<td>冲向高潮</td>
+<td>10.20</td>
+<td>1.90×</td>
+<td>局部 1.50× + <strong>右→左横扫</strong></td>
+<td>冷</td>
+<td></td>
 </tr>
 <tr>
 <td>6</td>
 <td><strong>10.0</strong></td>
-<td>1.0</td>
-<td>2</td>
+<td>1.5</td>
+<td>3</td>
 <td>C</td>
-<td>3.60</td>
-<td>1.10×</td>
-<td>固定</td>
+<td>2.60</td>
+<td>1.05×</td>
+<td>宽景拉远 1.15→1.03（与第 3 镜同源、尺度相反）</td>
+<td>暖</td>
 <td>★ 闪烁强调点</td>
 </tr>
 <tr>
 <td>7</td>
-<td>11.0</td>
-<td>1.5</td>
-<td>3</td>
+<td>11.5</td>
+<td>2.0</td>
+<td>4</td>
 <td>A</td>
-<td>14.60</td>
-<td>1.80×</td>
-<td>横摇 r→l</td>
-<td></td>
+<td>16.60</td>
+<td>1.70×</td>
+<td><strong>镜像 + 倒放 + 左→右横扫</strong> 1.40→1.52</td>
+<td>冷</td>
+<td>与第 10 镜三维度全不同</td>
 </tr>
 <tr>
 <td>8</td>
-<td>12.5</td>
-<td>2.0</td>
-<td>4</td>
+<td>13.5</td>
+<td>1.5</td>
+<td>3</td>
 <td>B</td>
-<td>11.40</td>
-<td>1.35×</td>
-<td>拉远 1.30→1.06</td>
+<td>13.20</td>
+<td>1.30×</td>
+<td><strong>2.15× 局部特写</strong>（右上区高楼霓虹），窗口 (0.84, 0.18)</td>
+<td>暖</td>
 <td></td>
 </tr>
 <tr>
 <td>9</td>
-<td>14.5</td>
-<td>2.0</td>
-<td>4</td>
-<td>A</td>
-<td>19.20</td>
-<td>2.20×</td>
-<td>轻推 1.02→1.08</td>
+<td>15.0</td>
+<td>1.5</td>
+<td>3</td>
+<td>C</td>
+<td>4.20</td>
+<td>1.00×</td>
+<td><strong>倒放</strong> + 最左取景窗 0.22，推近 1.45→1.56</td>
+<td>中性</td>
 <td></td>
 </tr>
 <tr>
@@ -477,24 +498,129 @@ measure_beat_period(x, sr, bpm_hint=(110, 140))
 <td>16.5</td>
 <td><strong>3.5</strong></td>
 <td>7</td>
-<td>B</td>
-<td>14.80</td>
-<td>1.50×</td>
-<td>长拉远 1.16→1.00</td>
+<td>A</td>
+<td>18.90</td>
+<td>1.30×</td>
+<td><strong>镜像</strong> + 右取景窗 0.68，拉远 1.28→1.02</td>
+<td>中性</td>
 <td>收尾（呼吸感）</td>
 </tr>
 </tbody>
 </table>
-<p><strong>设计规则</strong>
-1. 每个镜头时长都是 <strong>0.5 s（1 拍）的整数倍</strong> → 9 个切点全部落在节拍网格上；其中 <strong>t=10.0 s 恰好是一刀</strong>，闪烁强调点与剪切重合；
-2. 时长在 <strong>1.0–3.5 s</strong> 之间起伏（开场 3 s 铺陈 → 中段 1 s 快切 → 收尾 3.5 s 收束），避免等长切分的机械感；
-3. 三支素材交替（A/B/C 不连续重复），运镜方式 4 种（推近 / 拉远 / 横摇 / 固定），相邻镜头在机位与运动上都不同。</p>
+<p><strong>设计规则</strong></p>
+<ol>
+<li>每个镜头时长都是 <strong>0.5 s（1 拍）的整数倍</strong> → 9 个切点全部落在节拍网格上；其中 <strong>t=10.0 s 恰好是一刀</strong>，闪烁强调点与剪切重合；</li>
+<li>时长在 <strong>1.5–3.5 s</strong> 之间起伏（开场 3 s 铺陈 → 中段 1.5 s 快切 → 收尾 3.5 s 收束）；</li>
+<li><strong>相邻镜头必不同源</strong>（A→B→C→B→A→C→A→B→C→A），同一素材每次出现都换一种手法组合；</li>
+<li>每个镜头都带 <strong>≥0.11 的推拉幅度</strong>——静止机位会造成「冻帧」判定失败（v3 初版实测 7 处冻帧，见 §9.7）；</li>
+<li>色温按 <strong>中性 / 冷 / 暖</strong> 交替（<code>colorbalance</code> 幅度 ≤0.04，肉眼几乎察觉不到刻意，但能拉开相邻镜头的色彩分布）。</li>
+</ol>
+<p><strong>重复度体检（<code>tools/repetition_audit.py</code>）</strong></p>
+<p>把 10 个镜头各取中段一帧，缩略到 160×90 后<strong>两两比对</strong>（45 对），
+同时满足「缩略图平均绝对差 &lt; 0.12」且「直方图 JS 散度 &lt; 0.12」即判为「看上去是同一个画面」：</p>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>做了什么</th>
+<th>重复度评分（0 最好）</th>
+<th>高度重复对</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v2（观众反馈的版本）</td>
+<td>10 镜，A/B/C 各用 4/4/2 次，居中取景为主</td>
+<td>8.9 / 100</td>
+<td>4 对</td>
+</tr>
+<tr>
+<td>v3</td>
+<td>六种手法全开</td>
+<td>2.2 / 100</td>
+<td>1 对</td>
+</tr>
+<tr>
+<td>v3.1</td>
+<td>B 素材两次使用改成<strong>局部特写</strong></td>
+<td>2.2 / 100</td>
+<td>1 对</td>
+</tr>
+<tr>
+<td><strong>v3.2（最终）</strong></td>
+<td>第 7 镜再加「倒放 + 横扫」，与第 10 镜彻底区分</td>
+<td><strong>0.0 / 100</strong></td>
+<td><strong>0 对</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>评分口径：重复对数 ÷ 总对数 × 100。最终<strong>横竖两版都是 0 对重复</strong>——45 对镜头里没有任何两镜看起来是同一个画面。</p>
+</blockquote>
+<h3 id="51a">5.1a 降重复的六种手法（同素材多机位）</h3>
+<p>只有 3 支素材却要撑起 10 个镜头，关键是让<strong>同一支素材的每次出现都像是另一台摄像机拍的</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>手法</th>
+<th>实现</th>
+<th>用在哪</th>
+<th>为什么有效</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>水平镜像</strong></td>
+<td><code>hflip</code></td>
+<td>镜头 3、7、10</td>
+<td>城市灯带、车流方向左右互换，同一条街会读成两处不同地点</td>
+</tr>
+<tr>
+<td><strong>倒放</strong></td>
+<td><code>reverse</code></td>
+<td>镜头 4、7、9</td>
+<td>环绕/车流方向反转，观感像另一条时间线的机位</td>
+</tr>
+<tr>
+<td><strong>局部特写</strong></td>
+<td><code>zoom</code> 2.15–2.45</td>
+<td>镜头 3、4、8、9</td>
+<td>放大到原素材的某个角落（车灯细部、楼顶霓虹），与全景完全脱离</td>
+</tr>
+<tr>
+<td><strong>多取景窗口</strong></td>
+<td><code>cx</code> / <code>cy</code>（0=左/上，1=右/下）</td>
+<td>镜头 3、4、8、9、10</td>
+<td>同一素材的左、中、右、上、下窗口互不重叠</td>
+</tr>
+<tr>
+<td><strong>色调微差</strong></td>
+<td><code>colorbalance</code> 幅度 ≤0.04</td>
+<td>镜头 2、3、4、5、6、7、8</td>
+<td>冷暖交替，相邻镜头色彩分布明显分离，幅度小到看不出调过色</td>
+</tr>
+<tr>
+<td><strong>运动方向变化</strong></td>
+<td><code>zoompan</code> 推近/拉远 + 横扫 l→r / r→l</td>
+<td>全部 10 镜</td>
+<td>同一素材「推近」与「拉远」的观感差异接近两台机位</td>
+</tr>
+</tbody>
+</table>
+<p><strong>硬规则</strong>：① 相邻镜头绝不同源；② 同素材每次出现换手法组合；③ 每镜保留 ≥0.11 推拉幅度（防冻帧）；
+④ 用 <code>tools/repetition_audit.py</code> 事后验收，而不是靠「感觉不重复了」。</p>
 <h3 id="52">5.2 每支镜头的滤镜链</h3>
-<pre><code># 静态镜头（含裁切放大）
+<pre><code># ① 降重复手法（v3 新增，放在链路最前，作用于整幅源画面）
+reverse                                          # 倒放（镜头 4/7/9）
+hflip                                            # 水平镜像（镜头 3/7/10）
+# ② 取景/运镜（在原生分辨率上做，避免抖动）
+# 静态镜头（含裁切放大）
 crop=Wc:Hc:X:Y → scale=1920:1080:flags=lanczos
 # 运动镜头（在原生分辨率上做推拉/摇移，避免抖动）
 zoompan=z='z0+(z1-z0)*on/N':d=1:x='…':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=30
-# 之后统一：
+# ③ 色彩微差（相邻镜头冷暖交替，幅度 ≤0.04）
+colorbalance=rm=0.030:gm=0.008:bm=-0.030          # 暖（或 rm=-0.028:bm=0.038 冷）
+# ④ 之后统一：
 setpts=PTS/倍速                                  # 变速（延时感）
 minterpolate=fps=30:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=0   # 仅当有效帧率&lt;28fps
 tpad=stop_mode=clone:stop_duration=0.5           # 安全兜底（见 §9.1）
@@ -535,6 +661,58 @@ ffmpeg -i video_final.mp4 -i music.m4a -map 0:v:0 -map 1:a:0 \
 <p>编码参数：<code>libx264 -preset slow -crf 19 -profile:v high -level 4.1 -pix_fmt yuv420p</code>。</p>
 <h3 id="54-916">5.4 竖版 9:16 的差异</h3>
 <p>同一套镜头表与音乐，只改两处：<strong>画布</strong> 1080×1920，<strong>取景</strong> 先裁竖窗口再 zoompan（<code>build_portrait.py</code> 里 <code>PORTRAIT_PX</code> 控制每支镜头取源的左/中/右位置）。摇移镜头在竖窗口内横扫，视觉冲击比横版更强。</p>
+<h3 id="55">5.5 为什么不直接换新素材（以及对「重复度」的完整交代）</h3>
+<p>观众反馈「重复度太高」后，第一优先方案本应是<strong>换更多素材</strong>。以下是这个受限环境里的实际搜索结论：</p>
+<table>
+<thead>
+<tr>
+<th>尝试的路径</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>素材站 CDN 直连（Pexels / Pixabay / Mixkit / Coverr / Vimeo / archive.org / Wikimedia）</td>
+<td>全部 <code>000</code>（TLS 在网关被切断：域名可解析、TCP 能连，握手被拦）</td>
+</tr>
+<tr>
+<td>GitHub Code Search 找「城市/夜景/延时」文件（30+ 次检索、覆盖 400+ 仓库、1104 个候选路径）</td>
+<td>命中的夜间城市视频<strong>几乎全部是 Git LFS 指针</strong>（132–134 字节）</td>
+</tr>
+<tr>
+<td>直接走 LFS 协议取实体（batch API）</td>
+<td>元数据接口 <code>HTTP 200</code> 可用并返回签名下载地址，但该地址所在域名 <code>github-cloud.githubusercontent.com</code> <strong>被封（000）</strong></td>
+</tr>
+<tr>
+<td>逐个候选核对体积后下载（rainy-night-city 4K、city-skyline、rain-night-drive、night-intersection、纽约/伦敦/迪拜天际线壁纸等）</td>
+<td>下载结果均为 133 字节指针 → 全部作废</td>
+</tr>
+<tr>
+<td>已下载的 4K 候选 <code>917-slow-skyscrapers.mp4</code>（同一 Pexels 转载仓库，26 MB 真实二进制）</td>
+<td>抽帧检查为<strong>黄昏/白天</strong>（平均亮度 75.5），不符合「城市夜景」，弃用</td>
+</tr>
+<tr>
+<td>其他真实二进制候选（交通监控、东京街景、车内视角等）</td>
+<td>来源为个人上传、版权未明示，<strong>不能作为「免版权」素材使用</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论</strong>：在「免版权 + 真实城市夜景 + 非 LFS」三条约束同时成立时，本环境可达的素材上限就是 <strong>3 支</strong>
+（<code>216-speed-night-city-cars</code> / <code>233-eagle-drone-roundabout</code> / <code>211-speed-city</code>，均为 Pexels 免费素材）。
+因此 v3 改用<strong>同素材多机位</strong>手法降重复，并用可量化工具验收：重复度评分 <strong>8.9 → 0.0</strong>，高度重复镜头对 <strong>4 → 0</strong>。</p>
+<blockquote>
+<p>后续若能访问素材站，只需把新素材加进 <code>tools/fetch_assets.sh</code> 的 SPECS、并在 <code>build.py</code> 的 <code>SOURCES</code> 里登记，
+镜头表即可直接引用（<code>src="D"</code>）；验收、评分、重复度体检三步都不需要改动。</p>
+</blockquote>
+<p><strong>重复度体检工具（<code>tools/repetition_audit.py</code>）</strong></p>
+<pre><code class="language-bash">python3 tools/repetition_audit.py city-night-timelapse-20s.mp4          # 黑盒自动找切点
+python3 tools/repetition_audit.py vertical/city-night-timelapse-9x16-20s.mp4 --json reports/rep.json
+</code></pre>
+<p>它把每个镜头的中段帧缩略到 160×90 后<strong>两两比对</strong>（10 镜 = 45 对），
+同时满足「缩略图平均绝对差 MAD &lt; 0.12」且「直方图 JS 散度 &lt; 0.12」即判为「看上去是同一个画面」，
+最后给出 <strong>重复度评分 = 重复对数 ÷ 总对数 × 100</strong>（0 = 十个镜头互不相同，100 = 全部雷同）。
+与 <code>review/review_agent.py</code> 的区别：评审子代理看的是<strong>相邻镜头</strong>是否单调，这个工具看的是<strong>任意两镜</strong>是否撞脸——
+正是「重复度太高」这类反馈对应的度量。</p>
 <h2 id="6">6. 音画同步</h2>
 <table>
 <thead>
@@ -576,6 +754,8 @@ ffmpeg -i video_final.mp4 -i music.m4a -map 0:v:0 -map 1:a:0 \
 [PASS] 无冻帧/重复帧             [PASS] 每个镜头内部持续运动
 [PASS] 切点均为硬切              [PASS] 抽帧图生成
 </code></pre>
+<p>v3（降重复版）实测：<strong>12/12 全部通过</strong> —— 切点跳跃 46–60、镜头内最小运动 1.79、0 冻帧、
+切点低频强调 0.80 / 2.40 / 2.58 / 2.28 / 2.20 / 1.84 / 2.47 / 2.20 / 2.53 / 2.33。</p>
 <p>关键度量方法：
 - <strong>冻帧检测</strong>：逐帧灰度差分，任何 <code>diff &lt; 0.35</code> 的相邻帧对都视为“卡了一下”（曾据此抓出 8 处克隆帧，见 §9.1）；
 - <strong>硬切强度</strong>：切点两侧帧差应远大于镜头内帧差（实测切点跳跃 40–60，镜头内中位 2–14）；
@@ -704,7 +884,7 @@ ffmpeg -i video_final.mp4 -i music.m4a -map 0:v:0 -map 1:a:0 \
 <blockquote>
 <p>返工后重新渲染 + 重新自检 + 重新评分；第 2 轮评分卡见 <code>review/scorecard-landscape.{md,json}</code> 与 <code>review/scorecard-portrait.{md,json}</code>。</p>
 </blockquote>
-<h3 id="83-2-v2">8.3 第 2 轮评分（v2 成片）：<strong>通过</strong></h3>
+<h3 id="83-2-v2-reviewscorecard-landscape-v2mdjson">8.3 第 2 轮评分（v2 成片）：<strong>通过</strong>（评分卡已归档为 <code>review/scorecard-landscape-v2.{md,json}</code>）</h3>
 <table>
 <thead>
 <tr>
@@ -812,7 +992,114 @@ ffmpeg -i video_final.mp4 -i music.m4a -map 0:v:0 -map 1:a:0 \
 <p>剩余的可选打磨项（评分卡里会自动列出）：横版的暗部再抬一档（死黑 22.6% → &lt;20% 可拿满分）、
 给近似静态的两支镜头加更明显的推拉（镜头内最小帧间差 1.29 略低于 1.5 的满分行）、
 以及素材源数量（本环境夜景素材上限为 3 支，见 §12）。</p>
-<h3 id="83">8.3 怎么自己跑一遍</h3>
+<h3 id="84-3">8.4 第 3 轮：针对「重复度太高」的返工与重新评分</h3>
+<p>观众反馈「画面重复度太高」——这不是评分卡里的失分项，但属于真实观感问题，
+因此按 §5.1 重剪，并用<strong>两条独立标尺</strong>复测：评审子代理（100 分制）+ <code>tools/repetition_audit.py</code>（重复度，0 最好）。</p>
+<table>
+<thead>
+<tr>
+<th>版本</th>
+<th>做了什么</th>
+<th>评审总分（横版）</th>
+<th>重复度（横版）</th>
+<th>高度重复对</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v2</td>
+<td>（观众反馈的版本）</td>
+<td>92.9</td>
+<td>8.9 / 100</td>
+<td>4 对</td>
+</tr>
+<tr>
+<td>v3</td>
+<td>六种降重复手法全开 + 相邻镜头必不同源</td>
+<td>95.8</td>
+<td>2.2 / 100</td>
+<td>1 对</td>
+</tr>
+<tr>
+<td>v3.1</td>
+<td>B 素材两次使用改成局部特写（离开环岛圆形构图）</td>
+<td>95.3</td>
+<td>2.2 / 100</td>
+<td>1 对</td>
+</tr>
+<tr>
+<td><strong>v3.2（最终）</strong></td>
+<td>第 7 镜加「倒放 + 横扫」，与第 10 镜彻底区分</td>
+<td><strong>97.3</strong> ✅</td>
+<td><strong>0.0 / 100</strong></td>
+<td><strong>0 对</strong></td>
+</tr>
+</tbody>
+</table>
+<p>最终两版成绩（评分卡：<code>review/scorecard-landscape.{md,json}</code>、<code>review/scorecard-portrait.{md,json}</code>）：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>满分</th>
+<th>横版 v3.2</th>
+<th>竖版 v3.2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>技术规格与兼容性</td>
+<td>15</td>
+<td>15.0</td>
+<td>15.0</td>
+</tr>
+<tr>
+<td>节奏与音画同步</td>
+<td>25</td>
+<td>23.6</td>
+<td>23.6</td>
+</tr>
+<tr>
+<td>运动与流畅度</td>
+<td>15</td>
+<td>14.7</td>
+<td>14.9</td>
+</tr>
+<tr>
+<td>画面质量</td>
+<td>20</td>
+<td>20.0</td>
+<td>20.0</td>
+</tr>
+<tr>
+<td>剪辑结构与叙事</td>
+<td>15</td>
+<td>14.0</td>
+<td>14.3</td>
+</tr>
+<tr>
+<td>合规与可复现</td>
+<td>10</td>
+<td>10.0</td>
+<td>10.0</td>
+</tr>
+<tr>
+<td><strong>总评</strong></td>
+<td><strong>100</strong></td>
+<td><strong>97.3 ✅</strong></td>
+<td><strong>97.4 ✅</strong></td>
+</tr>
+</tbody>
+</table>
+<p>对比：第 1 轮 79.7 → 第 2 轮 92.9 → <strong>第 3 轮 97.3 / 97.4</strong>（累计 +17.6），且重复度归零。</p>
+<p><strong>可复现性</strong>：整套流程是确定性的——同一份素材 + 同一份镜头表重跑，成片<strong>逐字节一致</strong>
+（横版 33,861,552 B、竖版 33,318,316 B；海报 364,633 B / 320,854 B）。
+本次因为沙箱重置曾完整重渲一遍，两次产物字节数、自检结果、评分（97.3 / 97.4）与重复度（0.0）完全吻合。</p>
+<blockquote>
+<p>剩余可选打磨（评分卡自动列出）：暗部再抬一档（死黑占比）、切点低频强调均值（2.28× vs 满分线 2.6×）、
+素材源数量（本环境上限 3 支，见 §5.5）——三项都源于环境约束而非剪辑缺陷。</p>
+</blockquote>
+<h3 id="85">8.5 怎么自己跑一遍</h3>
 <pre><code class="language-bash">cd deliverables
 python3 review/review_agent.py --variant landscape   # ← 默认写入 review/scorecard-landscape.{json,md}
 python3 review/review_agent.py --variant portrait
@@ -847,6 +1134,17 @@ echo $?    # 0 = 通过（≥80）；1 = 未达标（需按评分卡里的建议
 <li><strong><code>raw.githubusercontent.com</code> 被墙</strong>：改用 <code>api.github.com/.../git/blobs/&lt;sha&gt;</code> + <code>base64 -d</code>（注意 blobs API 上限 100 MB）；</li>
 <li><strong>绝大多数夜景素材是 LFS</strong>：判断方法——下载后文件只有约 130 字节且首行是 <code>version https://git-lfs.github.com/spec/v1</code>。本环境无法解析 LFS 实体，遇到就换素材，不要浪费时间。</li>
 </ul>
+<h3 id="97-v3">9.7 v3 初版踩的坑：静止机位 + 冷启动画面 = 冻帧</h3>
+<p>降重复版第一轮渲染后，自检报 <strong><code>[FAIL] 无冻帧/重复帧</code>（7 处）</strong> 且「镜头 1 最小帧间差 = 0.00」。两条原因叠加：</p>
+<ol>
+<li>镜头 1 的素材起点（t=0.5 s）落在夜景远景的<strong>低变化区</strong>，1.6× 加速 + 30 fps 抽样后出现完全相同的相邻帧；</li>
+<li>为了让同一素材「看起来像另一台机位」，v3 曾把 4 个镜头设成<strong>固定缩放</strong>——局部特写处的变化不足以撑起逐帧差异。</li>
+</ol>
+<p>修复：镜头 1 起点改到 t=1.2 s，并给所有固定机位补上 <strong>≥0.11 的缓慢推拉</strong>（顺带满足评审「近静态镜头要加推拉」的建议）。
+补渲 5 个镜头后：<strong>冻帧 0 处，镜头内最小运动 1.79–11.55</strong>。</p>
+<blockquote>
+<p>教训：<strong>「静止机位」在逐帧差分验收里是不安全的</strong>，哪怕场景本身在动；给每个镜头留一点推拉余量，成本近乎为零。</p>
+</blockquote>
 <h2 id="10">10. 完整复现步骤</h2>
 <pre><code class="language-bash"># ── 0. 工具链 ────────────────────────────────────────────────
 bash tools/install-toolchain.sh

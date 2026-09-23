@@ -1,7 +1,7 @@
 # 城市夜景 · 20 秒延时混剪
 
 > 交付物（两个画幅，共用同一条音乐床与同一套切点）：
-> - **横版 16:9** → [`city-night-timelapse-20s.mp4`](./city-night-timelapse-20s.mp4) — 1920×1080 / 30 fps / 20.000 s ｜ 评审 **92.9 / 100** ✅
+> - **横版 16:9** → [`city-night-timelapse-20s.mp4`](./city-night-timelapse-20s.mp4) — 1920×1080 / 30 fps / 20.000 s ｜ 评审 **97.3 / 100** ✅
 > - **竖版 9:16** → [`vertical/city-night-timelapse-9x16-20s.mp4`](./vertical/city-night-timelapse-9x16-20s.mp4) — 1080×1920 / 30 fps / 20.000 s（抖音 / Reels / Shorts）｜ 评审 **96.8 / 100** ✅
 
 一条节奏感强的「城市夜景」延时风格混剪：10 个镜头，切点全部落在 120 BPM 的**拍点网格**上，长短镜交替（1.0–3.5 s）形成张弛，每一刀都压在鼓点上；首尾有淡入淡出，中段第 10.0 s 处有一次柔化高光闪烁作强调。打开 `index.html` 可同屏对照播放两个版本。

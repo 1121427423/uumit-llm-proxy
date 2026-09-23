@@ -61,9 +61,6 @@ def find_exe(name: str) -> str:
 
 
 FF = find_exe("ffmpeg")
-
-
-FF = find_exe("ffmpeg")
 FP = find_exe("ffprobe")
 
 # ---------------------------------------------------------------- 参数
@@ -79,16 +76,34 @@ SHOT = 2.0                      # 默认镜头长度（仅作参考值）
 #          因此 9 个切点依旧全部落在节拍网格上（其中 t=10.0s 正好是闪烁强调点）。
 #   zoom : (起始放大倍率, 结束放大倍率)；pan : 'l2r'/'r2l'/None
 SHOTS = [
-    dict(src="B", t=0.40, speed=1.35, dur=3.0, zoom=(1.00, 1.12), pan=None, cx=0.5, cy=0.5),
-    dict(src="A", t=0.50, speed=2.00, dur=2.0, zoom=(1.00, 1.00), pan=None, cx=0.5, cy=0.5),
-    dict(src="C", t=0.20, speed=1.00, dur=1.5, zoom=(1.15, 1.15), pan=None, cx=0.5, cy=0.5),
-    dict(src="B", t=5.60, speed=1.45, dur=1.0, zoom=(1.45, 1.45), pan="l2r", cx=0.5, cy=0.5),
-    dict(src="A", t=9.00, speed=2.20, dur=2.5, zoom=(1.06, 1.22), pan=None, cx=0.5, cy=0.5),
-    dict(src="C", t=3.60, speed=1.10, dur=1.0, zoom=(1.30, 1.30), pan=None, cx=0.56, cy=0.5),
-    dict(src="A", t=14.60, speed=1.80, dur=1.5, zoom=(1.35, 1.35), pan="r2l", cx=0.5, cy=0.5),
-    dict(src="B", t=11.40, speed=1.35, dur=2.0, zoom=(1.28, 1.06), pan=None, cx=0.5, cy=0.5),
-    dict(src="A", t=19.20, speed=2.20, dur=2.0, zoom=(1.02, 1.08), pan=None, cx=0.5, cy=0.5),
-    dict(src="B", t=14.80, speed=1.50, dur=3.5, zoom=(1.16, 1.00), pan=None, cx=0.5, cy=0.5),
+    # 1  A 城市全景 · 推近（基准镜头）
+    dict(src="A", t=1.20, speed=1.60, dur=3.0, zoom=(1.00, 1.16), pan=None, cx=0.5, cy=0.5),
+    # 2  B 航拍环岛 · 拉远 + 冷调
+    dict(src="B", t=1.00, speed=1.30, dur=2.0, zoom=(1.24, 1.02), pan=None, cx=0.5, cy=0.5, tone="cool"),
+    # 3  C 霓虹特写 · 水平镜像 + 高倍放大
+    dict(src="C", t=0.30, speed=1.00, dur=1.5, zoom=(1.90, 2.02), pan=None, cx=0.42, cy=0.5,
+         mirror=True, tone="warm"),
+    # 4  B 左下区车灯细部 · 倒放 + 2.3× 特写（完全脱离环岛圆形构图）
+    dict(src="B", t=6.20, speed=1.40, dur=2.0, zoom=(2.30, 2.45), pan=None, cx=0.18, cy=0.80,
+         reverse=True, tone="cool"),
+    # 5  A 车流局部 · 右→左横扫 + 冷调
+    dict(src="A", t=10.20, speed=1.90, dur=1.5, zoom=(1.50, 1.50), pan="r2l", cx=0.5, cy=0.5,
+         tone="cool"),
+    # 6  C 街头宽景 · 拉远（与第 3 镜同源、尺度相反）
+    dict(src="C", t=2.60, speed=1.05, dur=1.5, zoom=(1.15, 1.03), pan=None, cx=0.5, cy=0.5,
+         tone="warm"),
+    # 7  A 镜像 + 倒放 + 横扫（与第 10 镜的“镜像定窗拉远”在方向/运动/时间上全不同）
+    dict(src="A", t=16.60, speed=1.70, dur=2.0, zoom=(1.40, 1.52), pan="l2r", cx=0.5, cy=0.5,
+         mirror=True, reverse=True, tone="cool"),
+    # 8  B 右上区高楼霓虹细部 · 2.15× 特写
+    dict(src="B", t=13.20, speed=1.30, dur=1.5, zoom=(2.15, 2.35), pan=None, cx=0.84, cy=0.18,
+         tone="warm"),
+    # 9  C 最左取景窗 · 倒放 + 推近
+    dict(src="C", t=4.20, speed=1.00, dur=1.5, zoom=(1.45, 1.56), pan=None, cx=0.22, cy=0.5,
+         reverse=True),
+    # 10 A 镜像 · 右侧窗口拉远（收尾）
+    dict(src="A", t=18.90, speed=1.30, dur=3.5, zoom=(1.28, 1.02), pan=None, cx=0.68, cy=0.5,
+         mirror=True),
 ]
 
 DURS = [sh["dur"] for sh in SHOTS]
@@ -279,6 +294,11 @@ def shot_filter(sh, tag):
     z0, z1 = sh["zoom"]
     n_in = max(2, int(round(sh["dur"] * sh["speed"] * sfps)))
     vf = []
+    # 降重复手法（v3）：倒放 / 水平镜像 —— 同一素材由此派生出观感不同的“机位”
+    if sh.get("reverse"):
+        vf.append("reverse")
+    if sh.get("mirror"):
+        vf.append("hflip")
     moving = abs(z1 - z0) > 1e-6 or bool(sh.get("pan"))
     if not moving:
         # 纯静态：原生空间裁切后直接缩放到 1080p
@@ -297,15 +317,26 @@ def shot_filter(sh, tag):
                 xexpr = f"{span:.1f}*on/{n_in - 1}"
             else:
                 xexpr = f"{span:.1f}-{span:.1f}*on/{n_in - 1}"
+        elif abs(float(sh.get("cx", 0.5)) - 0.5) > 1e-6:
+            # 推近/拉远时把取景窗口固定压向画面左/右侧（同一素材的“另一台机位”）
+            xexpr = f"(iw-iw/zoom)*{float(sh['cx']):.4f}"
         else:
             xexpr = "iw/2-(iw/zoom/2)"
-        vf.append(f"zoompan=z='{zexpr}':d=1:x='{xexpr}':y='ih/2-(ih/zoom/2)'"
+        yexpr = (f"(ih-ih/zoom)*{float(sh['cy']):.4f}"
+                 if abs(float(sh.get("cy", 0.5)) - 0.5) > 1e-6
+                 else "ih/2-(ih/zoom/2)")
+        vf.append(f"zoompan=z='{zexpr}':d=1:x='{xexpr}':y='{yexpr}'"
                   f":s={W}x{H}:fps={FPS}")
     vf.append(f"setpts=PTS/{sh['speed']}")
     if sfps / sh["speed"] < 28.0:
         # 注：vsbmc=1 会慢 3 倍且对夜景下采样画质无可见收益，这里关掉
         vf.append(f"minterpolate=fps={FPS}:mi_mode=mci:mc_mode=aobmc:"
                   f"me_mode=bidir:vsbmc=0")
+    tone = sh.get("tone")
+    if tone == "warm":
+        vf.append("colorbalance=rm=0.030:gm=0.008:bm=-0.030")
+    elif tone == "cool":
+        vf.append("colorbalance=rm=-0.028:bm=0.038")
     # 末帧克隆补齐：源有效帧不够时用最后一帧顶到 dur*FPS，保证帧数精确（见 §9.1）
     vf.append(f"tpad=stop_mode=clone:stop_duration=0.5")
     vf.append(f"fps={FPS},setsar=1")
