@@ -385,6 +385,8 @@ export FFMPEG=~/.local/share/citynight/ffmpeg
 export FFPROBE=~/.local/share/citynight/ffprobe
 
 # ── 1. 素材（三支 Pexels 免费素材 + 一首 CC0 音乐）──────────────
+bash tools/fetch_assets.sh            # ← 一键版：下载 3 支视频 + 1 首 CC0 音乐并逐个校验 sha256
+# 等价的手工命令（供理解每一步在做什么）：
 mkdir -p /tmp/foot /tmp/music
 for spec in \
   "sugianand/11planner:frontend/public/city/216-speed-night-city-cars.mp4:/tmp/foot/night_city_cars.mp4" \

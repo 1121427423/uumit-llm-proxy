@@ -9,6 +9,7 @@
 | `packages/imageio_ffmpeg-0.6.0-py3-none-manylinux2014_x86_64.whl` | **软件安装包**（28.1 MB）：内含 `ffmpeg 7.0.2-static` 二进制 |
 | `toolchain.lock.json` | 版本与 **sha256 校验和** 锁文件（含未入库的 ffprobe 包） |
 | `install-toolchain.sh` | 一键安装 + 校验（离线优先用仓库内 wheel） |
+| `fetch_assets.sh` | 一键获取全部免版权素材（3 支视频 + 1 首 CC0 音乐）并逐个校验 sha256 |
 
 ## 安装
 
@@ -62,3 +63,22 @@ bash tools/install-toolchain.sh          # 会用锁文件里的 sha256 校验�
 ```
 
 `build.py` 的查找顺序为：`$FFMPEG/$FFPROBE` → `PATH` → `~/.local/share/citynight/` → 已知发行包位置。
+
+## 素材获取（fetch_assets.sh）
+
+```bash
+bash tools/fetch_assets.sh                 # 默认 → /tmp/foot 与 /tmp/music
+bash tools/fetch_assets.sh 素材目录 音乐目录   # 自定义落盘位置
+```
+
+走 `api.github.com` 的 blobs 接口（raw 域名在受限网络下不可达），每个文件下载后与脚本内固化的 sha256 比对，
+不匹配立即报错退出。实测结果：
+
+```
+216-speed-night-city-cars.mp4   78,957,165 B  73753c68b2aedc6b…
+233-eagle-drone-roundabout.mp4  30,613,178 B  28437f6f64048b43…
+211-speed-city.mp4               4,249,788 B  c524bb8e1eb3ad3e…
+Shenzhen Nightlife.mp3          10,659,995 B  d341e5b295429e71…
+```
+
+> 两首视频/音乐均免版权（Pexels License / CC0 1.0），可直接用于构建：`python3 build.py --stage all`。
